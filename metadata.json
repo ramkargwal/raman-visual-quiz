@@ -1,0 +1,6 @@
+{
+  "name": "Visual Identification Quiz",
+  "description": "An interactive visual identification quiz application with Hindi support, audio pronunciation, timers, and dataset management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

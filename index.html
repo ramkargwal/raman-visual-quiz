@@ -1,0 +1,4504 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Raman Visual Quiz</title>
+    <meta
+      name="description"
+      content="An interactive visual identification quiz application with Practice & Exam modes, AI Prompt Builder, Quiz Database Import/Export, custom question timing, and Hindi audio support."
+    />
+    <meta property="og:title" content="Raman Visual Quiz" />
+    <meta
+      property="og:description"
+      content="An interactive visual identification quiz application with Practice & Exam modes, AI Prompt Builder, Quiz Database Import/Export, custom question timing, and Hindi audio support."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      :root {
+        --card: #ffffff;
+        --text: #1e293b;
+        --muted: #64748b;
+        --bg: #f8fafc;
+        --border: #e2e8f0;
+        --option-bg: #ffffff;
+        --header-from: #2563eb;
+        --header-to: #4f46e5;
+        --progress-bg: #e5e7eb;
+        --timer-normal: #0ca806;
+        --timer-warn: #f59e0b;
+        --timer-danger: #dc2626;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --card: #1e293b;
+          --text: #f1f5f9;
+          --muted: #94a3b8;
+          --bg: #0f172a;
+          --border: #334155;
+          --option-bg: #1e293b;
+          --progress-bg: #334155;
+        }
+      }
+
+      * {
+        font-family: "Poppins", sans-serif;
+        box-sizing: border-box;
+      }
+      body {
+        background: linear-gradient(
+          135deg,
+          #d1fae5 0%,
+          #cffafe 40%,
+          #dbeafe 100%
+        );
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+      }
+      @media (prefers-color-scheme: dark) {
+        body {
+          background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+      }
+
+      .quiz-card {
+        width: 100%;
+        max-width: 1200px;
+        background: var(--card);
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.13);
+        margin: auto;
+      }
+      .header {
+        padding: 20px 24px;
+        background: linear-gradient(
+          135deg,
+          var(--header-from),
+          var(--header-to)
+        );
+        color: white;
+      }
+      .header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .quiz-controls {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-shrink: 0;
+        flex-wrap: wrap;
+      }
+
+      .header-pill-btn {
+        padding: 5px 12px;
+        border: 1.5px solid rgba(255, 255, 255, 0.4);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .header-pill-btn:hover {
+        background: rgba(255, 255, 255, 0.32);
+        transform: scale(1.03);
+      }
+
+      #fullscreenBtn {
+        padding: 5px 12px;
+        border: none;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        font-size: 18px;
+        cursor: pointer;
+        transition: 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #fullscreenBtn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(1.05);
+      }
+
+      #darkModeBtn {
+        padding: 5px 10px;
+        border: none;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      #darkModeBtn:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      #startBtn {
+        padding: 5px 14px;
+        border: none;
+        border-radius: 8px;
+        background: white;
+        color: #2563eb;
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      #startBtn:hover {
+        background: #f0f4ff;
+        transform: scale(1.04);
+      }
+
+      .title {
+        font-size: 22px;
+        font-weight: 700;
+        text-align: center;
+        flex: 1;
+        min-width: 160px;
+      }
+      .score-box {
+        background: white;
+        color: #111;
+        padding: 6px 16px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 14px;
+        flex-shrink: 0;
+        transition: transform 0.2s;
+      }
+      .score-box.pop {
+        animation: popAnim 0.35s;
+      }
+      @keyframes popAnim {
+        50% {
+          transform: scale(1.18);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      .progress-area {
+        padding: 16px 24px 0;
+      }
+      .progress-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 13px;
+        margin-bottom: 8px;
+        color: var(--muted);
+      }
+      .progress-bar {
+        height: 20px;
+        background: var(--progress-bg);
+        border-radius: 999px;
+        overflow: hidden;
+      }
+      .progress-fill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #2563eb, #60a5fa);
+        transition: width 0.4s ease;
+      }
+
+      .timer-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 24px 0;
+      }
+      .timer-bar-wrap {
+        flex: 1;
+        height: 8px;
+        background: var(--progress-bg);
+        border-radius: 999px;
+        overflow: hidden;
+      }
+      .timer-bar {
+        height: 100%;
+        width: 100%;
+        background: var(--timer-normal);
+        transition:
+          width 1s linear,
+          background 0.3s;
+        border-radius: 999px;
+      }
+      .timer-count {
+        font-size: 14px;
+        font-weight: 700;
+        min-width: 36px;
+        text-align: right;
+        color: var(--timer-normal);
+        transition: color 0.3s;
+      }
+      .timer-count.warn {
+        color: var(--timer-warn);
+      }
+      .timer-count.danger {
+        color: var(--timer-danger);
+      }
+      .timer-bar.warn {
+        background: var(--timer-warn);
+      }
+      .timer-bar.danger {
+        background: var(--timer-danger);
+      }
+
+      .content {
+        padding: 24px 24px 20px;
+        position: relative;
+      }
+      .question-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+      .question {
+        font-size: 32px;
+        font-weight: 800;
+        line-height: 1.3;
+        color: var(--text);
+        text-align: center;
+        flex: 1;
+        transition: 0.2s;
+      }
+      .question .hi-text {
+        font-size: 22px;
+        font-weight: 600;
+        color: #4b5563;
+        display: block;
+        margin-top: 4px;
+      }
+
+      .speak-btn {
+        width: 46px;
+        height: 46px;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 22px;
+        flex-shrink: 0;
+        background: linear-gradient(145deg, #0fd4c0, #0a7c74);
+        color: white;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow:
+          inset 0 1px 1px rgba(255, 255, 255, 0.35),
+          inset 0 -2px 4px rgba(0, 0, 0, 0.2),
+          0 4px 12px rgba(13, 148, 136, 0.45);
+        transition: all 0.15s ease;
+        position: relative;
+        top: 0;
+      }
+      .speak-btn:hover {
+        background: linear-gradient(145deg, #18e8d3, #0d9e94);
+        box-shadow:
+          inset 0 1px 1px rgba(255, 255, 255, 0.4),
+          inset 0 -2px 4px rgba(0, 0, 0, 0.2),
+          0 6px 18px rgba(13, 148, 136, 0.55);
+        top: -2px;
+      }
+      .speak-btn:active {
+        background: linear-gradient(145deg, #0a9e95, #087a72);
+        box-shadow:
+          inset 0 2px 5px rgba(0, 0, 0, 0.3),
+          0 2px 6px rgba(13, 148, 136, 0.3);
+        top: 2px;
+        transform: scale(0.94);
+      }
+
+      .search-btn {
+        background: linear-gradient(145deg, #5a9bff, #1e56d0);
+        box-shadow:
+          inset 0 1px 1px rgba(255, 255, 255, 0.3),
+          inset 0 -2px 4px rgba(0, 0, 0, 0.2),
+          0 4px 12px rgba(37, 99, 235, 0.45);
+        display: none;
+      }
+      .search-btn:hover {
+        background: linear-gradient(145deg, #70aaff, #2d68e8);
+        box-shadow:
+          inset 0 1px 1px rgba(255, 255, 255, 0.35),
+          inset 0 -2px 4px rgba(0, 0, 0, 0.2),
+          0 6px 18px rgba(37, 99, 235, 0.55);
+      }
+      .search-btn:active {
+        background: linear-gradient(145deg, #1a4fc0, #1538a0);
+        box-shadow:
+          inset 0 2px 5px rgba(0, 0, 0, 0.3),
+          0 2px 6px rgba(37, 99, 235, 0.3);
+        top: 2px;
+        transform: scale(0.94);
+      }
+
+      .star-q-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        border: 2px solid var(--border);
+        background: var(--bg);
+        color: #94a3b8;
+        font-size: 20px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+      }
+      .star-q-btn:hover {
+        border-color: #f59e0b;
+        color: #f59e0b;
+        transform: scale(1.06);
+      }
+      .star-q-btn.starred {
+        background: #fef3c7;
+        border-color: #f59e0b;
+        color: #f59e0b;
+      }
+
+      .options {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+      }
+      @media (max-width: 900px) {
+        .options {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+      @media (max-width: 500px) {
+        .options {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .option {
+        position: relative;
+        border: 3px solid var(--border);
+        border-radius: 16px;
+        cursor: pointer;
+        background: var(--option-bg);
+        transition: all 0.22s ease;
+        overflow: hidden;
+        padding: 4px;
+        aspect-ratio: 1 / 1;
+      }
+      .option img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 12px;
+        display: block;
+      }
+      .option-label {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.92);
+        color: #2563eb;
+        font-size: 14px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        z-index: 10;
+        transition: 0.2s;
+      }
+      .option-check-badge {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #2563eb;
+        color: white;
+        font-size: 15px;
+        font-weight: 800;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.45);
+        z-index: 10;
+      }
+
+      .option:hover:not(.correct):not(.wrong):not(.exam-selected):not(.disabled) {
+        border-color: #fbbf24;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(251, 191, 36, 0.25);
+      }
+      .option:focus-visible:not(.disabled) {
+        border-color: #fbbf24;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(251, 191, 36, 0.25);
+        outline: 3px solid #3b82f6;
+      }
+      .option.exam-selected {
+        border-color: #2563eb;
+        background: rgba(37, 99, 235, 0.12);
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.28);
+        transform: translateY(-2px);
+      }
+      .option.exam-selected .option-label {
+        background: #2563eb;
+        color: white;
+      }
+      .option.exam-selected .option-check-badge {
+        display: flex;
+      }
+      .option.correct {
+        border-color: #10b981;
+        background: #d1fae5;
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.3);
+      }
+      .option.correct .option-label {
+        background: #16a34a;
+        color: white;
+      }
+      .option.wrong {
+        border-color: #ef4444;
+        background: #fee2e2;
+        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.3);
+      }
+      .option.wrong .option-label {
+        background: #dc2626;
+        color: white;
+      }
+      .option.disabled {
+        opacity: 0.8;
+        cursor: not-allowed;
+        pointer-events: none;
+      }
+
+      .feedback {
+        margin-top: 16px;
+        font-size: 18px;
+        font-weight: 700;
+        min-height: 28px;
+        text-align: center;
+      }
+      .result {
+        display: none;
+        padding: 36px 28px;
+        text-align: center;
+        color: var(--text);
+      }
+      .result-score-ring {
+        width: 130px;
+        height: 130px;
+        border-radius: 50%;
+        margin: 0 auto 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-size: 36px;
+        font-weight: 700;
+        color: white;
+      }
+      .result-score-ring .sub {
+        font-size: 13px;
+        font-weight: 500;
+        opacity: 0.85;
+      }
+
+      .grade-badge {
+        display: inline-block;
+        padding: 6px 24px;
+        border-radius: 999px;
+        font-size: 20px;
+        font-weight: 800;
+        margin-bottom: 8px;
+      }
+      .stats-row {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin: 16px 0;
+      }
+      .stat-pill {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 10px 18px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--muted);
+      }
+      .stat-pill span {
+        display: block;
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--text);
+      }
+
+      .session-history {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 12px 18px;
+        margin: 10px auto;
+        max-width: 480px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .session-history strong {
+        color: var(--text);
+      }
+
+      .result-actions {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 22px;
+      }
+      .btn-action {
+        border: none;
+        padding: 11px 22px;
+        font-size: 15px;
+        border-radius: 999px;
+        cursor: pointer;
+        background: linear-gradient(135deg, #2563eb, #4f46e5);
+        color: white;
+        font-weight: 600;
+        transition: all 0.2s;
+      }
+      .btn-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(37, 99, 235, 0.3);
+      }
+      .btn-action.amber {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+      }
+      .btn-action.rose {
+        background: linear-gradient(135deg, #f43f5e, #e11d48);
+      }
+
+      #reviewAnswers {
+        text-align: left;
+        margin-top: 20px;
+        display: none;
+      }
+      .review-item {
+        margin-bottom: 12px;
+        padding: 14px;
+        background: #fef2f2;
+        border-left: 4px solid #dc2626;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .review-item img {
+        width: 100px;
+        height: 100px;
+        border-radius: 8px;
+        object-fit: cover;
+        border: 2px solid #16a34a;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .review-item {
+          background: rgba(220, 38, 38, 0.15);
+        }
+      }
+      body.force-dark .review-item {
+        background: rgba(220, 38, 38, 0.15);
+      }
+      body.force-light .review-item {
+        background: #fef2f2;
+      }
+
+      #homePage textarea {
+        font-family: monospace;
+        font-size: 14px;
+        background: rgba(255, 255, 255, 0.9);
+        border: 1.5px solid #cbd5e1;
+        transition:
+          border 0.2s,
+          box-shadow 0.2s,
+          background-color 0.2s;
+      }
+      #homePage textarea:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        background: white;
+      }
+      #quizInput.drag-over {
+        border-color: #2563eb !important;
+        background-color: #eff6ff !important;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2) !important;
+        transform: scale(1.01);
+        transition: all 0.2s ease;
+      }
+
+      #optimizeProgress {
+        display: none;
+        width: 100%;
+        max-width: 800px;
+        margin: 8px auto 0;
+      }
+      #optimizeProgressBar {
+        height: 8px;
+        background: #e5e7eb;
+        border-radius: 999px;
+        overflow: hidden;
+      }
+      #optimizeProgressFill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #2563eb, #60a5fa);
+        transition: width 0.3s ease;
+        border-radius: 999px;
+      }
+      #optimizeProgressText {
+        font-size: 12px;
+        color: #64748b;
+        text-align: center;
+        margin-top: 4px;
+      }
+
+      body.force-dark {
+        --card: #1e293b;
+        --text: #f1f5f9;
+        --muted: #94a3b8;
+        --bg: #0f172a;
+        --border: #334155;
+        --option-bg: #1e293b;
+        --progress-bg: #334155;
+        background: linear-gradient(
+          135deg,
+          #0f172a 0%,
+          #1e293b 100%
+        ) !important;
+      }
+      body.force-dark .quiz-card,
+      body.force-dark .db-card,
+      body.force-dark .modal-card {
+        background: #1e293b !important;
+        color: #f1f5f9 !important;
+        border-color: #334155 !important;
+      }
+      body.force-dark .db-title {
+        color: #f1f5f9 !important;
+      }
+      body.force-dark .question .hi-text {
+        color: #cbd5e1;
+      }
+      body.force-dark #homePage textarea {
+        background: rgba(15, 23, 42, 0.92);
+        color: #f1f5f9;
+        border-color: #334155;
+      }
+      body.force-light {
+        --card: #ffffff;
+        --text: #1e293b;
+        --muted: #64748b;
+        --bg: #f8fafc;
+        --border: #e2e8f0;
+        --option-bg: #ffffff;
+        --progress-bg: #e5e7eb;
+        background: linear-gradient(
+          135deg,
+          #d1fae5 0%,
+          #cffafe 40%,
+          #dbeafe 100%
+        ) !important;
+      }
+
+      :fullscreen #mainQuizWrapper {
+        padding: 3vh 3vw !important;
+        height: 100vh;
+        align-items: center;
+      }
+      :fullscreen .quiz-card {
+        max-width: 1600px;
+        width: 100%;
+        height: 100%;
+        border-radius: 24px;
+        box-shadow: 0 25px 70px rgba(0, 0, 0, 0.2);
+        display: flex;
+        flex-direction: column;
+        margin: auto;
+      }
+      :fullscreen #quizScreen,
+      :fullscreen .result {
+        flex: 1;
+        flex-direction: column;
+      }
+      :fullscreen .content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- TOAST BANNER -->
+    <div
+      id="toastBanner"
+      role="status"
+      aria-live="polite"
+      style="display: none"
+      class="fixed top-4 right-4 z-[60] px-5 py-3 rounded-xl bg-slate-900 text-white text-sm font-semibold shadow-xl border border-slate-700 transition-all"
+    ></div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         MODALS (Copy Prompt, Question Timing, Question Qty, Exam Palette, Exam Submit, Exit Confirm, Starred Bank, DB Confirm)
+    ═══════════════════════════════════════════════════════════ -->
+
+    <!-- 1. COPY & MAKE AI PROMPT MODAL -->
+    <div
+      id="copyPromptModal"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Copy AI Prompt"
+      style="display: none"
+      class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4"
+    >
+      <div class="modal-card bg-white rounded-3xl max-w-md w-full p-5 shadow-2xl border border-slate-200 flex flex-col items-center max-h-[92vh] overflow-y-auto">
+        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-600 to-blue-600 text-white flex items-center justify-center text-2xl shadow mb-2.5 shrink-0">
+          📋
+        </div>
+        <h2 class="db-title text-xl font-extrabold text-slate-900 mb-3 text-center">
+          Copy &amp; Make AI Prompt
+        </h2>
+
+        <!-- Topic / Study Notes Input -->
+        <div class="w-full mb-3.5">
+          <label
+            for="promptTopicInput"
+            class="block text-xs font-bold text-slate-600 mb-1.5"
+          >
+            Topic or Study Notes (Optional)
+          </label>
+          <textarea
+            id="promptTopicInput"
+            rows="3"
+            placeholder="e.g. Indian Birds, Computer Hardware, Medicinal Plants, or leave blank to paste topic later in AI..."
+            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 text-xs sm:text-sm font-medium outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 resize-none"
+          ></textarea>
+        </div>
+
+        <!-- Number of Questions -->
+        <div class="w-full mb-3.5">
+          <div class="flex items-center justify-between mb-1.5">
+            <label
+              for="promptCustomCountInput"
+              class="text-xs font-bold text-slate-600"
+            >
+              Number of Questions / Items
+            </label>
+            <input
+              id="promptCustomCountInput"
+              type="number"
+              min="4"
+              max="200"
+              value="50"
+              oninput="syncPromptCountInput(this.value)"
+              class="w-20 px-2.5 py-1 rounded-lg border border-slate-300 bg-slate-50 text-slate-900 text-xs font-extrabold text-center outline-none focus:border-blue-500"
+            />
+          </div>
+          <div class="flex flex-wrap gap-2" id="promptCountChips">
+            <button type="button" onclick="selectPromptCount(10)" data-count="10" class="prompt-count-chip px-3.5 py-1.5 rounded-xl text-xs font-bold border cursor-pointer transition bg-slate-100 text-slate-800 border-slate-300">10</button>
+            <button type="button" onclick="selectPromptCount(20)" data-count="20" class="prompt-count-chip px-3.5 py-1.5 rounded-xl text-xs font-bold border cursor-pointer transition bg-slate-100 text-slate-800 border-slate-300">20</button>
+            <button type="button" onclick="selectPromptCount(30)" data-count="30" class="prompt-count-chip px-3.5 py-1.5 rounded-xl text-xs font-bold border cursor-pointer transition bg-slate-100 text-slate-800 border-slate-300">30</button>
+            <button type="button" onclick="selectPromptCount(50)" data-count="50" class="prompt-count-chip px-3.5 py-1.5 rounded-xl text-xs font-bold border cursor-pointer transition bg-blue-600 text-white border-blue-600">50</button>
+            <button type="button" onclick="selectPromptCount(100)" data-count="100" class="prompt-count-chip px-3.5 py-1.5 rounded-xl text-xs font-bold border cursor-pointer transition bg-slate-100 text-slate-800 border-slate-300">100</button>
+          </div>
+        </div>
+
+        <!-- Difficulty Level -->
+        <div class="w-full mb-3.5">
+          <div class="text-xs font-bold text-slate-600 mb-1.5">
+            Difficulty Level
+          </div>
+          <div class="flex flex-wrap gap-2" id="promptDiffChips">
+            <button type="button" onclick="selectPromptDiff('Easy')" data-diff="Easy" class="prompt-diff-chip px-3.5 py-1.5 rounded-xl text-xs font-bold border cursor-pointer transition bg-slate-100 text-slate-800 border-slate-300">Easy</button>
+            <button type="button" onclick="selectPromptDiff('Medium')" data-diff="Medium" class="prompt-diff-chip px-3.5 py-1.5 rounded-xl text-xs font-bold border cursor-pointer transition bg-indigo-600 text-white border-indigo-600">Medium</button>
+            <button type="button" onclick="selectPromptDiff('Hard')" data-diff="Hard" class="prompt-diff-chip px-3.5 py-1.5 rounded-xl text-xs font-bold border cursor-pointer transition bg-slate-100 text-slate-800 border-slate-300">Hard</button>
+            <button type="button" onclick="selectPromptDiff('Exam')" data-diff="Exam" class="prompt-diff-chip px-3.5 py-1.5 rounded-xl text-xs font-bold border cursor-pointer transition bg-slate-100 text-slate-800 border-slate-300">Exam</button>
+          </div>
+        </div>
+
+        <!-- Language Selector -->
+        <div class="w-full mb-5">
+          <div class="text-xs font-bold text-slate-600 mb-1.5">
+            Language Style
+          </div>
+          <div class="flex flex-wrap gap-2" id="promptLangChips">
+            <button type="button" onclick="selectPromptLang('Hinglish')" data-lang="Hinglish" class="prompt-lang-chip px-3.5 py-1.5 rounded-xl text-xs font-bold border cursor-pointer transition bg-violet-600 text-white border-violet-600">Hinglish</button>
+            <button type="button" onclick="selectPromptLang('Hindi')" data-lang="Hindi" class="prompt-lang-chip px-3.5 py-1.5 rounded-xl text-xs font-bold border cursor-pointer transition bg-slate-100 text-slate-800 border-slate-300">Hindi</button>
+            <button type="button" onclick="selectPromptLang('English')" data-lang="English" class="prompt-lang-chip px-3.5 py-1.5 rounded-xl text-xs font-bold border cursor-pointer transition bg-slate-100 text-slate-800 border-slate-300">English</button>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex w-full gap-2.5">
+          <button
+            type="button"
+            onclick="closeCopyPromptModal()"
+            class="flex-1 h-11 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm cursor-pointer transition"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            id="confirmCopyPromptBtn"
+            onclick="generateAndCopyPrompt()"
+            class="flex-[1.4] h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm flex items-center justify-center cursor-pointer transition shadow-sm"
+          >
+            Copy Prompt
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. QUESTION TIMING MODAL -->
+    <div
+      id="questionTimingModal"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Question Timing"
+      style="display: none"
+      class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
+    >
+      <div class="modal-card bg-white rounded-3xl max-w-md w-full p-5 shadow-2xl border border-slate-200 flex flex-col items-center">
+        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-white flex items-center justify-center text-2xl shadow mb-2.5">
+          ⏱️
+        </div>
+        <h2 class="db-title text-xl font-extrabold text-slate-900">
+          Question Timing
+        </h2>
+        <p class="text-xs font-medium text-slate-500 mb-4">
+          Set time per question (Default: 30s)
+        </p>
+
+        <div class="w-full rounded-2xl bg-blue-50/90 border border-blue-200 px-4 py-3 flex items-center justify-between mb-3.5">
+          <button
+            type="button"
+            onclick="stepModalTime(-5)"
+            aria-label="Decrease Time"
+            class="w-10 h-10 rounded-full bg-white text-blue-600 font-extrabold text-xl shadow-sm cursor-pointer flex items-center justify-center"
+          >
+            −
+          </button>
+          <div class="text-center">
+            <div id="modalTimeHeroDisplay" class="text-3xl font-extrabold text-blue-600">
+              30s
+            </div>
+            <div class="text-xs font-semibold text-slate-500">
+              Seconds per Question
+            </div>
+          </div>
+          <button
+            type="button"
+            onclick="stepModalTime(5)"
+            aria-label="Increase Time"
+            class="w-10 h-10 rounded-full bg-white text-blue-600 font-extrabold text-xl shadow-sm cursor-pointer flex items-center justify-center"
+          >
+            +
+          </button>
+        </div>
+
+        <div class="w-full mb-3.5">
+          <input
+            id="modalTimeSlider"
+            type="range"
+            min="5"
+            max="180"
+            value="30"
+            oninput="setModalTimeValue(this.value)"
+            aria-label="Question Time Slider"
+            class="w-full accent-blue-600 cursor-pointer h-2.5 rounded-lg"
+          />
+          <div class="flex justify-between text-[11px] font-semibold text-slate-500 px-1 mt-1">
+            <span>5s</span>
+            <span>180s</span>
+          </div>
+        </div>
+
+        <div class="w-full mb-3.5">
+          <div class="text-xs font-bold text-slate-600 mb-2">Quick Select</div>
+          <div class="flex flex-wrap gap-2" id="modalTimePresetChips">
+            <button type="button" onclick="setModalTimeValue(15)" data-sec="15" class="time-preset-chip px-3.5 py-2 rounded-xl text-xs font-bold border cursor-pointer transition bg-slate-100 text-slate-800 border-slate-300">15s</button>
+            <button type="button" onclick="setModalTimeValue(30)" data-sec="30" class="time-preset-chip px-3.5 py-2 rounded-xl text-xs font-bold border cursor-pointer transition bg-blue-600 text-white border-blue-600">30s (Default)</button>
+            <button type="button" onclick="setModalTimeValue(45)" data-sec="45" class="time-preset-chip px-3.5 py-2 rounded-xl text-xs font-bold border cursor-pointer transition bg-slate-100 text-slate-800 border-slate-300">45s</button>
+            <button type="button" onclick="setModalTimeValue(60)" data-sec="60" class="time-preset-chip px-3.5 py-2 rounded-xl text-xs font-bold border cursor-pointer transition bg-slate-100 text-slate-800 border-slate-300">60s</button>
+            <button type="button" onclick="setModalTimeValue(90)" data-sec="90" class="time-preset-chip px-3.5 py-2 rounded-xl text-xs font-bold border cursor-pointer transition bg-slate-100 text-slate-800 border-slate-300">90s</button>
+            <button type="button" onclick="setModalTimeValue(120)" data-sec="120" class="time-preset-chip px-3.5 py-2 rounded-xl text-xs font-bold border cursor-pointer transition bg-slate-100 text-slate-800 border-slate-300">120s</button>
+          </div>
+        </div>
+
+        <div class="w-full mb-4">
+          <label for="modalCustomTimeInput" class="block text-xs font-bold text-slate-600 mb-1">
+            Custom Timing (Seconds)
+          </label>
+          <input
+            id="modalCustomTimeInput"
+            type="number"
+            min="5"
+            max="600"
+            value="30"
+            oninput="setModalTimeValue(this.value, true)"
+            placeholder="e.g. 45, 75, 150"
+            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50 text-sm font-semibold text-slate-900 outline-none focus:border-blue-600"
+          />
+        </div>
+
+        <div class="flex w-full gap-2.5">
+          <button
+            type="button"
+            onclick="closeQuestionTimingModal()"
+            class="flex-1 h-12 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm cursor-pointer transition"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            id="applyTimingBtn"
+            onclick="applyQuestionTiming()"
+            class="flex-[1.3] h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm flex items-center justify-center cursor-pointer transition"
+          >
+            Apply
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. SELECT NO. OF QUESTIONS MODAL -->
+    <div
+      id="questionQtyModal"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Select Number of Questions"
+      style="display: none"
+      class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
+    >
+      <div class="modal-card bg-white rounded-3xl max-w-md w-full p-5 shadow-2xl border border-slate-200 flex flex-col items-center">
+        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-white flex items-center justify-center text-2xl shadow mb-2.5">
+          🎛️
+        </div>
+        <h2 class="db-title text-xl font-extrabold text-slate-900 mb-4">
+          Select No. of Questions
+        </h2>
+
+        <div class="w-full rounded-2xl bg-blue-50/90 border border-blue-200 px-4 py-3.5 flex items-center justify-between mb-4">
+          <button
+            type="button"
+            onclick="stepModalQty(-1)"
+            aria-label="Decrease Questions"
+            class="w-10 h-10 rounded-full bg-white text-blue-600 font-extrabold text-xl shadow-sm cursor-pointer flex items-center justify-center"
+          >
+            −
+          </button>
+          <div class="text-center">
+            <div id="modalQtyHeroDisplay" class="text-3xl font-extrabold text-blue-600">
+              10
+            </div>
+            <div id="modalQtyMaxSubtext" class="text-xs font-semibold text-slate-500">
+              out of 10 Questions
+            </div>
+          </div>
+          <button
+            type="button"
+            onclick="stepModalQty(1)"
+            aria-label="Increase Questions"
+            class="w-10 h-10 rounded-full bg-white text-blue-600 font-extrabold text-xl shadow-sm cursor-pointer flex items-center justify-center"
+          >
+            +
+          </button>
+        </div>
+
+        <div class="w-full mb-4">
+          <input
+            id="modalQtySlider"
+            type="range"
+            min="1"
+            max="10"
+            value="10"
+            oninput="setModalQtyValue(this.value)"
+            aria-label="Question Quantity Slider"
+            class="w-full accent-blue-600 cursor-pointer h-2.5 rounded-lg"
+          />
+          <div class="flex justify-between text-[11px] font-semibold text-slate-500 px-1 mt-1">
+            <span>Min: 1</span>
+            <span id="modalQtySliderMaxLabel">Max: 10</span>
+          </div>
+        </div>
+
+        <div class="w-full mb-5">
+          <div class="text-xs font-bold text-slate-600 mb-2">Quick Select</div>
+          <div class="flex flex-wrap gap-2" id="modalQtyPresetChips"></div>
+        </div>
+
+        <div class="flex w-full gap-2.5">
+          <button
+            type="button"
+            onclick="closeQuestionQtyModal()"
+            class="flex-1 h-12 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm cursor-pointer transition"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            id="applyQtyBtn"
+            onclick="applyQuestionQty()"
+            class="flex-[1.3] h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm flex items-center justify-center cursor-pointer transition"
+          >
+            Apply
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. EXAM QUESTION PALETTE MODAL -->
+    <div
+      id="examPaletteModal"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Question Palette"
+      style="display: none"
+      class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4"
+    >
+      <div class="modal-card bg-white rounded-2xl max-w-4xl w-full p-5 shadow-2xl border border-slate-200 flex flex-col items-center">
+        <div class="flex items-center justify-between w-full mb-3.5 pb-2.5 border-b border-slate-200">
+          <div class="flex items-center gap-2.5">
+            <span class="w-8 h-8 rounded-xl bg-blue-600/10 text-blue-600 text-sm flex items-center justify-center font-bold">
+              ▦
+            </span>
+            <div>
+              <h2 class="db-title text-base font-extrabold text-slate-900 leading-tight">
+                Question Palette
+              </h2>
+              <p class="text-[11px] font-medium text-slate-500">
+                Click any question number to jump directly to it
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onclick="closeExamPaletteModal()"
+            aria-label="Close Question Palette"
+            class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-sm flex items-center justify-center cursor-pointer transition"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2.5 w-full mb-3.5">
+          <div class="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-green-50 border border-green-200">
+            <span class="w-2.5 h-2.5 rounded-full bg-green-600 inline-block shrink-0"></span>
+            <span id="paletteAnsweredCount" class="text-xs font-bold text-green-800">Answered (0)</span>
+          </div>
+          <div class="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-200">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block shrink-0"></span>
+            <span id="paletteBookmarkedCount" class="text-xs font-bold text-amber-800">Bookmarked (0)</span>
+          </div>
+          <div class="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-300">
+            <span class="w-2.5 h-2.5 rounded-full bg-slate-500 inline-block shrink-0"></span>
+            <span id="paletteLeftCount" class="text-xs font-bold text-slate-700">Left (0)</span>
+          </div>
+        </div>
+
+        <div
+          id="paletteGridContainer"
+          class="w-full max-h-[48vh] min-h-[100px] overflow-y-auto p-3 bg-slate-50 rounded-xl border border-slate-200 mb-4 flex flex-wrap items-center justify-center gap-2"
+        ></div>
+
+        <div class="flex w-full gap-2.5">
+          <button
+            type="button"
+            onclick="closeExamPaletteModal()"
+            class="flex-1 h-10 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs sm:text-sm cursor-pointer transition"
+          >
+            Close
+          </button>
+          <button
+            type="button"
+            onclick="closeExamPaletteModal(); openExamSubmitConfirmModal();"
+            class="flex-[1.3] h-10 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-xs sm:text-sm cursor-pointer transition"
+          >
+            Submit Exam
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. EXAM SUBMIT CONFIRMATION MODAL -->
+    <div
+      id="examSubmitConfirmModal"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Submit Exam Confirmation"
+      style="display: none"
+      class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
+    >
+      <div class="modal-card bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-200 flex flex-col items-center text-center">
+        <h2 class="db-title text-xl font-extrabold text-slate-900">
+          Submit Exam?
+        </h2>
+        <p class="text-sm text-slate-500 mt-1.5 mb-4">
+          Check your exam summary before final submission:
+        </p>
+
+        <div class="grid grid-cols-4 gap-2 w-full mb-5">
+          <div class="p-2.5 rounded-xl bg-slate-100 border border-slate-200">
+            <div class="text-[11px] font-semibold text-slate-500">Total</div>
+            <div id="submitStatTotal" class="text-lg font-extrabold text-blue-600">0</div>
+          </div>
+          <div class="p-2.5 rounded-xl bg-slate-100 border border-slate-200">
+            <div class="text-[11px] font-semibold text-slate-500">Done</div>
+            <div id="submitStatDone" class="text-lg font-extrabold text-green-600">0</div>
+          </div>
+          <div class="p-2.5 rounded-xl bg-slate-100 border border-slate-200">
+            <div class="text-[11px] font-semibold text-slate-500">Skipped</div>
+            <div id="submitStatSkipped" class="text-lg font-extrabold text-amber-500">0</div>
+          </div>
+          <div class="p-2.5 rounded-xl bg-slate-100 border border-slate-200">
+            <div class="text-[11px] font-semibold text-slate-500">Bookmarked</div>
+            <div id="submitStatBookmarked" class="text-lg font-extrabold text-amber-500">0</div>
+          </div>
+        </div>
+
+        <div class="flex w-full gap-2.5">
+          <button
+            type="button"
+            onclick="closeExamSubmitConfirmModal()"
+            class="flex-1 h-12 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm cursor-pointer transition"
+          >
+            Back
+          </button>
+          <button
+            type="button"
+            id="confirmSubmitExamBtn"
+            onclick="submitExamNow()"
+            class="flex-[1.3] h-12 rounded-xl bg-green-600 hover:bg-green-700 text-white font-extrabold text-sm cursor-pointer transition"
+          >
+            Submit Now
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. STARRED ITEMS BANK MODAL -->
+    <div
+      id="starredBankModal"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Starred Items Bank"
+      style="display: none"
+      class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
+    >
+      <div class="modal-card bg-white rounded-3xl max-w-xl w-full max-h-[85vh] p-5 shadow-2xl border border-slate-200 flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-500 text-xl">
+              ⭐
+            </div>
+            <div>
+              <h2 class="db-title text-base font-extrabold text-slate-900">
+                Starred Items Bank
+              </h2>
+              <p id="starredBankCountText" class="text-xs font-semibold text-slate-500">
+                0 Important Items
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            id="clearAllStarredBtn"
+            onclick="clearAllStarredItems()"
+            title="Clear All Starred"
+            class="p-2 rounded-full text-red-600 hover:bg-red-50 cursor-pointer"
+          >
+            🗑️
+          </button>
+        </div>
+
+        <div id="starredBankList" class="flex-1 overflow-y-auto flex flex-col gap-2.5 pr-1"></div>
+
+        <div id="starredBankActions" class="flex gap-2 pt-1">
+          <button
+            type="button"
+            onclick="startStarredItemsQuiz()"
+            class="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm cursor-pointer"
+          >
+            Start Quiz
+          </button>
+          <button
+            type="button"
+            onclick="exportStarredItemsTxt()"
+            class="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm cursor-pointer"
+          >
+            Export .txt
+          </button>
+        </div>
+
+        <button
+          type="button"
+          onclick="closeStarredBankModal()"
+          class="w-full py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm cursor-pointer"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+
+    <!-- 7. CLEAR DATABASE CONFIRMATION MODAL -->
+    <div
+      id="clearDbConfirmModal"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Clear All Quiz Data Confirmation"
+      style="display: none"
+      class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
+    >
+      <div class="modal-card bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-200 flex flex-col items-center text-center gap-3">
+        <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-2xl">
+          ⚠️
+        </div>
+        <h2 class="db-title text-lg font-extrabold text-slate-900">
+          Clear All Quiz Data?
+        </h2>
+        <p id="clearDbConfirmText" class="text-sm text-slate-600">
+          This will permanently delete all saved quizzes and starred items from your Quiz Database.
+        </p>
+        <div class="flex w-full gap-2.5 pt-2">
+          <button
+            type="button"
+            onclick="closeClearDbConfirmModal()"
+            class="flex-1 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-sm cursor-pointer transition"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            id="confirmClearDbBtn"
+            onclick="confirmClearAllDatabase()"
+            class="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm cursor-pointer transition"
+          >
+            Yes, Delete All
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         HOME PAGE
+    ═══════════════════════════════════════════════════════════ -->
+    <div
+      id="homePage"
+      class="min-h-screen p-4 sm:p-6 flex flex-col justify-center items-center"
+    >
+      <div
+        class="w-full max-w-7xl flex flex-col py-6 gap-4"
+        style="min-height: 90vh"
+      >
+        <div
+          class="flex flex-col text-center bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 p-6 rounded-2xl shadow-xl relative overflow-hidden border border-blue-400"
+        >
+          <!-- Top-Right Quick Controls: Question Timing & Dark Mode -->
+          <div class="absolute top-3.5 right-4 z-20 flex items-center gap-2">
+            <button
+              type="button"
+              id="homeTimingBtn"
+              onclick="openQuestionTimingModal()"
+              title="Set Time per Question"
+              class="px-3 py-1.5 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-bold flex items-center justify-center backdrop-blur-sm cursor-pointer transition"
+            >
+              <span id="homeTimingLabel">30s</span>
+            </button>
+            <button
+              type="button"
+              id="homeDarkModeBtn"
+              onclick="toggleDarkMode()"
+              title="Toggle Dark Mode (L)"
+              class="px-3 py-1.5 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-bold flex items-center justify-center backdrop-blur-sm cursor-pointer transition"
+            >
+              Dark
+            </button>
+          </div>
+
+          <h1
+            class="text-3xl font-extrabold text-white mb-1 relative z-10 drop-shadow-lg"
+          >
+            Raman Visual Quiz
+          </h1>
+          <p class="text-blue-100 font-medium relative z-10 text-sm">
+            Paste your JSON Array of Items below or Drag &amp; Drop a File to
+            begin.
+          </p>
+        </div>
+
+        <textarea
+          id="quizInput"
+          wrap="off"
+          rows="12"
+          placeholder='[&#10;  {&#10;    "Name": "English Name",&#10;    "Hindi": "हिंदी नाम",&#10;    "Description": "यहाँ आइटम के बारे में जानकारी दें",&#10;    "link": "https://..."&#10;  }&#10;]'
+          class="w-full p-4 border rounded-xl shadow-sm resize-none outline-none text-sm leading-relaxed overflow-x-auto"
+        ></textarea>
+
+        <div id="optimizeProgress">
+          <div id="optimizeProgressBar">
+            <div id="optimizeProgressFill"></div>
+          </div>
+          <div id="optimizeProgressText">Checking images...</div>
+        </div>
+
+        <!-- Mode Selector + Inputs + Action Buttons -->
+        <div class="flex gap-2.5 items-center justify-center flex-wrap mt-2">
+          <!-- Practice Mode vs Exam Mode Pill Group -->
+          <div class="flex items-center bg-white/90 p-1 rounded-xl border border-slate-300 shadow-sm">
+            <button
+              type="button"
+              id="modePracticeBtn"
+              onclick="setQuizMode('PRACTICE')"
+              class="px-3 py-2 rounded-lg text-xs font-extrabold flex items-center gap-1.5 cursor-pointer transition whitespace-nowrap bg-blue-600 text-white shadow-sm"
+            >
+              <span>Practice Mode</span>
+            </button>
+            <button
+              type="button"
+              id="modeExamBtn"
+              onclick="setQuizMode('EXAM')"
+              class="px-3 py-2 rounded-lg text-xs font-extrabold flex items-center gap-1.5 cursor-pointer transition whitespace-nowrap text-slate-600 hover:text-slate-900"
+            >
+              <span>Exam Mode</span>
+            </button>
+          </div>
+
+          <input
+            id="quizName"
+            type="text"
+            placeholder="Dataset Name (optional)"
+            class="flex-1 min-w-[150px] max-w-[210px] px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm font-medium outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-200 bg-white/90 text-slate-900"
+          />
+
+          <input
+            id="quizCategory"
+            type="text"
+            placeholder="Category (e.g. Birds, Tech)"
+            value="General"
+            class="flex-1 min-w-[130px] max-w-[180px] px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm font-medium outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200 bg-white/90 text-slate-900"
+          />
+
+          <button
+            type="button"
+            onclick="openCopyPromptModal()"
+            id="copyPromptBtn"
+            class="px-4 py-2.5 rounded-xl font-bold text-white text-sm transition-all shadow bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 hover:-translate-y-0.5 cursor-pointer"
+          >
+            Copy Prompt
+          </button>
+
+          <button
+            type="button"
+            onclick="saveQuizToStorage()"
+            class="px-4 py-2.5 rounded-xl font-bold text-white text-sm transition-all shadow bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 hover:-translate-y-0.5 cursor-pointer"
+          >
+            Save
+          </button>
+
+          <button
+            type="button"
+            id="openQuizDatabaseBtn"
+            onclick="openDatabaseScreen()"
+            class="px-4 py-2.5 rounded-xl font-bold text-white text-sm transition-all shadow bg-gradient-to-r from-sky-600 to-blue-700 hover:from-sky-700 hover:to-blue-800 hover:-translate-y-0.5 cursor-pointer"
+          >
+            Database (0)
+          </button>
+
+          <button
+            type="button"
+            onclick="createQuizFromText()"
+            class="px-6 py-2.5 rounded-xl font-bold text-white text-base transition-all shadow bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 hover:-translate-y-0.5 cursor-pointer"
+          >
+            Start
+          </button>
+        </div>
+
+        <div class="flex justify-center gap-4 w-full mb-1 mt-2 flex-wrap">
+          <label
+            class="flex items-center gap-2 cursor-pointer text-sm font-semibold text-blue-800 bg-blue-100 px-4 py-2 rounded-lg border border-blue-300 hover:bg-blue-200 transition"
+          >
+            <input
+              type="checkbox"
+              id="enableSearchToggle"
+              class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 cursor-pointer"
+            />
+            <span>Enable Image Search</span>
+          </label>
+          <label
+            class="flex items-center gap-2 cursor-pointer text-sm font-semibold text-purple-800 bg-purple-100 px-4 py-2 rounded-lg border border-purple-300 hover:bg-purple-200 transition"
+          >
+            <input
+              type="checkbox"
+              id="shuffleToggle"
+              checked
+              class="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 cursor-pointer"
+            />
+            <span>Shuffle Questions</span>
+          </label>
+        </div>
+
+        <div
+          class="mt-1 p-3 bg-white/70 rounded-xl border border-blue-200 text-center w-full max-w-3xl mx-auto shadow-sm"
+        >
+          <div
+            class="flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs font-semibold text-gray-600"
+          >
+            <span>Shortcuts:</span>
+            <span><b class="text-blue-600">Enter</b>: Start Quiz</span>
+            <span><b class="text-blue-600">C</b>: Copy &amp; Make Prompt</span>
+            <span><b class="text-blue-600">Drag &amp; Drop</b>: Load File</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         QUIZ DATABASE SCREEN (IMPORT / EXPORT / SHARE / CATEGORIES / STARRED)
+    ═══════════════════════════════════════════════════════════ -->
+    <div
+      id="quizDatabasePage"
+      style="display: none"
+      class="min-h-screen w-full p-4 sm:p-6 flex flex-col items-center"
+    >
+      <input
+        id="dbFileInput"
+        type="file"
+        accept=".txt,.json,text/plain,application/json"
+        onchange="handleDatabaseFileImport(event)"
+        class="hidden"
+      />
+
+      <div class="w-full max-w-3xl flex flex-col gap-3.5">
+        <!-- Top Header Card -->
+        <div class="db-card bg-white rounded-2xl p-4 shadow-md border border-slate-200/80 flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <button
+                type="button"
+                onclick="closeDatabaseScreen()"
+                aria-label="Back to Home"
+                class="w-10 h-10 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg flex items-center justify-center shadow cursor-pointer transition"
+              >
+                ←
+              </button>
+              <div>
+                <h1 class="db-title text-xl font-extrabold text-slate-900 leading-tight">
+                  Quiz Database
+                </h1>
+                <p id="dbSubtitleStats" class="text-xs font-semibold text-slate-500">
+                  0 Quizzes • 0 Categories
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              id="dbClearAllBtn"
+              onclick="clearAllDatabaseConfirm()"
+              title="Clear All Quiz Data"
+              aria-label="Clear All Quiz Data"
+              class="w-10 h-10 rounded-full bg-red-600/12 hover:bg-red-600/20 text-red-600 flex items-center justify-center text-lg cursor-pointer transition"
+            >
+              🗑️
+            </button>
+          </div>
+
+          <!-- Import / Export / Share Action Row -->
+          <div class="grid grid-cols-3 gap-2">
+            <button
+              type="button"
+              id="dbImportBtn"
+              onclick="document.getElementById('dbFileInput').click()"
+              class="h-10 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm flex items-center justify-center shadow-sm cursor-pointer transition"
+            >
+              <span>Import</span>
+            </button>
+
+            <button
+              type="button"
+              id="dbExportAllBtn"
+              onclick="exportAllDatabaseTxt()"
+              class="h-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm flex items-center justify-center shadow-sm cursor-pointer transition"
+            >
+              <span>Export</span>
+            </button>
+
+            <button
+              type="button"
+              id="dbShareAllBtn"
+              onclick="shareAllDatabaseTxt()"
+              class="h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm flex items-center justify-center shadow-sm cursor-pointer transition"
+            >
+              <span>Share</span>
+            </button>
+          </div>
+
+          <!-- Search Bar -->
+          <div class="relative flex items-center">
+            <span class="absolute left-3.5 text-slate-400 text-sm pointer-events-none">
+              🔍
+            </span>
+            <input
+              id="dbSearchInput"
+              type="text"
+              oninput="renderDatabaseScreen()"
+              placeholder="Search quiz list and category..."
+              aria-label="Search quiz list and category"
+              class="w-full pl-9 pr-9 py-2.5 rounded-xl border border-slate-300 bg-slate-50 text-sm text-slate-900 outline-none focus:border-blue-600"
+            />
+            <button
+              type="button"
+              id="dbSearchClearBtn"
+              onclick="clearDatabaseSearch()"
+              style="display: none"
+              aria-label="Clear search"
+              class="absolute right-3 text-slate-400 hover:text-slate-600 text-sm font-bold cursor-pointer"
+            >
+              ✕
+            </button>
+          </div>
+
+          <!-- Category Filter Chips -->
+          <div id="dbCategoryChips" class="flex items-center gap-2 overflow-x-auto pb-1"></div>
+        </div>
+
+        <!-- Starred Items Bank Card -->
+        <div
+          onclick="openStarredBankModal()"
+          class="db-card bg-amber-50/90 rounded-2xl px-4 py-3 border-2 border-amber-400/70 shadow-sm flex items-center justify-between gap-3 cursor-pointer hover:border-amber-500 transition"
+        >
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-500 text-lg shrink-0">
+              ⭐
+            </div>
+            <div class="min-w-0">
+              <div class="db-title text-sm font-extrabold text-slate-900">
+                Starred Items Bank
+              </div>
+              <div id="dbStarredSummaryText" class="text-xs text-slate-600 truncate">
+                Tap Star during any quiz to save important visual items here
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center gap-1 shrink-0" onclick="event.stopPropagation()">
+            <button
+              type="button"
+              onclick="startStarredItemsQuiz()"
+              title="Start Starred Quiz"
+              class="w-9 h-9 rounded-full hover:bg-blue-100 text-blue-600 flex items-center justify-center text-base cursor-pointer"
+            >
+              ▶
+            </button>
+            <button
+              type="button"
+              onclick="openStarredBankModal()"
+              title="View Starred Items"
+              class="w-9 h-9 rounded-full hover:bg-amber-100 text-amber-600 flex items-center justify-center text-base cursor-pointer"
+            >
+              👁
+            </button>
+            <button
+              type="button"
+              onclick="exportStarredItemsTxt()"
+              title="Export Starred Items (.txt)"
+              class="w-9 h-9 rounded-full hover:bg-indigo-100 text-indigo-600 flex items-center justify-center text-base cursor-pointer"
+            >
+              📤
+            </button>
+          </div>
+        </div>
+
+        <!-- Category-Grouped Quiz List -->
+        <div id="dbQuizListContainer" class="flex flex-col gap-3"></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         MAIN QUIZ & RESULT WRAPPER
+    ═══════════════════════════════════════════════════════════ -->
+    <div
+      id="mainQuizWrapper"
+      class="w-full min-h-screen flex justify-center p-4 sm:p-8"
+      style="display: none; overflow-y: auto"
+    >
+      <div class="quiz-card" id="mainQuiz">
+        <div class="header">
+          <div class="header-row">
+            <div class="quiz-controls">
+              <button
+                type="button"
+                id="quizHomeBtn"
+                onclick="goHome()"
+                title="Return to Home (Esc)"
+                class="header-pill-btn"
+              >
+                <span>Home</span>
+              </button>
+
+              <!-- Select No. of Questions Pill Button -->
+              <button
+                type="button"
+                id="numQuestionsBtn"
+                onclick="openQuestionQtyModal()"
+                title="Select Number of Questions (Press Q)"
+                class="header-pill-btn"
+              >
+                <span id="numQuestionsLabel">Q: 10</span>
+              </button>
+
+              <button type="button" id="startBtn" onclick="startQuiz()">
+                Start Again (S)
+              </button>
+            </div>
+
+            <div class="title" id="quizHeaderTitle">Raman Visual Quiz</div>
+
+            <div style="display: flex; align-items: center; gap: 10px">
+              <div class="score-box" id="scoreBox">Score: 0</div>
+              <button
+                type="button"
+                id="examPaletteBtn"
+                onclick="openExamPaletteModal()"
+                style="display: none"
+                class="score-box !px-4 !py-1.5 !text-sm items-center gap-2 cursor-pointer hover:scale-105 transition !text-blue-700 font-extrabold shadow-md"
+                title="Open Question Palette"
+              >
+                <span id="examPaletteBtnText">Palette (0/0)</span>
+              </button>
+              <button
+                type="button"
+                id="darkModeBtn"
+                onclick="toggleDarkMode()"
+                title="Toggle Dark Mode (L)"
+              >
+                🌙
+              </button>
+              <button
+                type="button"
+                id="fullscreenBtn"
+                onclick="toggleFullscreen()"
+                title="Toggle Fullscreen (F)"
+              >
+                ⛶
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="quizScreen">
+          <div class="progress-area">
+            <div class="progress-info">
+              <span id="questionNumber"></span>
+              <span
+                class="hidden sm:inline-block"
+                style="
+                  font-size: 11px;
+                  color: var(--muted);
+                  text-align: center;
+                  font-weight: 500;
+                "
+              >
+                Space: Speak | D: Desc | G: Search | N: Next/Skip | P: Pause | Q: Qty | L: Dark/Light
+              </span>
+              <span id="remaining"></span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+          </div>
+
+          <div class="timer-row">
+            <span
+              id="pauseTimerBtn"
+              onclick="toggleTimer()"
+              style="font-size: 20px; cursor: pointer; user-select: none"
+              title="Pause Timer (P)"
+              >⏸️</span
+            >
+            <div class="timer-bar-wrap">
+              <div class="timer-bar" id="timerBar"></div>
+            </div>
+            <span class="timer-count" id="timerCount">30</span>
+          </div>
+
+          <div class="content">
+            <div class="question-wrapper">
+              <button
+                type="button"
+                id="searchBtn"
+                class="speak-btn search-btn"
+                onclick="searchImage()"
+                title="Google Image Search (G)"
+              >
+                🌐
+              </button>
+              <div class="question" id="question"></div>
+              <div class="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  id="starQuestionBtn"
+                  onclick="toggleStarCurrentItem()"
+                  class="star-q-btn"
+                  title="Star as Important Item (Save to Database)"
+                >
+                  ☆
+                </button>
+                <button
+                  type="button"
+                  id="speakBtn"
+                  class="speak-btn"
+                  title="Speak Question (Space)"
+                >
+                  🔊
+                </button>
+              </div>
+            </div>
+            <div class="options" id="options"></div>
+            <div class="feedback" id="feedback"></div>
+          </div>
+
+          <!-- EXAM MODE BOTTOM NAVIGATION BAR -->
+          <div
+            id="examBottomBar"
+            style="display: none"
+            class="w-full border-t border-slate-200 px-6 py-3.5 flex-col gap-2.5"
+          >
+            <div class="flex items-center justify-between">
+              <div>
+                <button
+                  type="button"
+                  id="examClearResponseBtn"
+                  onclick="clearExamResponse()"
+                  style="display: none"
+                  class="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-sm cursor-pointer transition"
+                >
+                  Clear Response
+                </button>
+              </div>
+              <button
+                type="button"
+                id="examSubmitTopBtn"
+                onclick="openExamSubmitConfirmModal()"
+                class="px-4 py-1.5 rounded-xl bg-green-600 hover:bg-green-700 text-white text-xs font-extrabold flex items-center justify-center shadow-sm cursor-pointer transition"
+              >
+                <span>Submit Exam</span>
+              </button>
+            </div>
+
+            <div class="flex items-center gap-2.5">
+              <button
+                type="button"
+                id="examPrevBtn"
+                onclick="goExamPrev()"
+                class="flex-1 h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white font-bold text-sm flex items-center justify-center cursor-pointer disabled:cursor-not-allowed transition"
+              >
+                <span>Previous</span>
+              </button>
+
+              <button
+                type="button"
+                id="examBookmarkBtn"
+                onclick="toggleExamBookmark()"
+                class="px-3.5 h-11 rounded-xl border-2 border-slate-300 bg-slate-100 text-slate-700 flex items-center justify-center text-xs sm:text-sm font-extrabold cursor-pointer transition shrink-0"
+              >
+                <span id="examBookmarkText">Bookmark</span>
+              </button>
+
+              <button
+                type="button"
+                id="examNextBtn"
+                onclick="goExamNextOrSubmit()"
+                class="flex-1 h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm flex items-center justify-center cursor-pointer transition"
+              >
+                <span id="examNextBtnText">Next</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="result" id="result">
+          <div class="result-score-ring" id="scoreRing">
+            <div id="finalScore"></div>
+            <div class="sub" id="finalFraction"></div>
+          </div>
+
+          <div class="grade-badge" id="gradeBadge"></div>
+          <p
+            id="gradeMsg"
+            style="font-size: 15px; color: var(--muted); margin: 4px 0 16px"
+          ></p>
+
+          <div class="stats-row">
+            <div class="stat-pill">
+              Accuracy<span id="statAccuracy">—</span>
+            </div>
+            <div class="stat-pill">Correct<span id="statCorrect">—</span></div>
+            <div class="stat-pill">Wrong<span id="statWrong">—</span></div>
+            <div class="stat-pill">Skipped<span id="statSkipped">—</span></div>
+          </div>
+
+          <div class="session-history" id="sessionHistory"></div>
+
+          <div class="result-actions">
+            <button
+              type="button"
+              class="btn-action amber"
+              id="toggleReviewBtn"
+              style="display: none"
+              onclick="toggleReview()"
+            >
+              View Wrong Answers (W)
+            </button>
+            <button
+              type="button"
+              class="btn-action rose"
+              id="retryBtn"
+              style="display: none"
+              onclick="retryWrongAnswers()"
+            >
+              Retry Wrong (R)
+            </button>
+            <button type="button" class="btn-action" onclick="startQuiz()">
+              Try Again (T)
+            </button>
+            <button
+              type="button"
+              class="btn-action"
+              onclick="goHome()"
+              style="background: linear-gradient(135deg, #475569, #334155)"
+            >
+              New Data (H)
+            </button>
+          </div>
+
+          <div id="reviewAnswers"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* ═══════════════════════════════════════════════════════════
+       STATE & CONFIGURATION
+    ═══════════════════════════════════════════════════════════ */
+      let rawItems = [];
+      let unplayedPool = [];
+      let activeQuiz = [];
+      let wrongQuestions = [];
+      let current = 0,
+        score = 0;
+      let locked = false;
+      let timerInterval = null;
+      let nextTimeout = null;
+      let toastTimeout = null;
+      let timerPaused = false;
+
+      // Feature 5: Selectable Time per Question (persisted in localStorage)
+      let questionTimeSeconds = (function () {
+        const saved = parseInt(
+          localStorage.getItem("question_time_seconds") || "",
+          10,
+        );
+        return !isNaN(saved) && saved >= 5 && saved <= 600 ? saved : 30;
+      })();
+      let modalTempTimeSeconds = questionTimeSeconds;
+
+      // Feature 4: Selectable Number of Questions
+      let selectedNumQuestions = 10;
+      let modalTempQty = 10;
+
+      // Feature 2: Practice vs Exam Mode
+      let quizMode =
+        localStorage.getItem("quiz_mode") === "EXAM" ? "EXAM" : "PRACTICE";
+      let examAnswers = {};
+      let examBookmarkedIndices = new Set();
+      let examTotalTimeSeconds = 30;
+      let timeLeft = questionTimeSeconds;
+
+      // Feature 3: Copy & Make Prompt state
+      let promptSelectedCount = 50;
+      let promptSelectedDifficulty = "Medium";
+      let promptSelectedLanguage = "Hinglish";
+
+      // Feature 1: Quiz Database & Starred Items Bank
+      let dbSelectedCategoryFilter = "All";
+      let starredItems = (function () {
+        try {
+          const parsed = JSON.parse(
+            localStorage.getItem("starredVisualItemsBank") || "[]",
+          );
+          return Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+          return [];
+        }
+      })();
+
+      let searchWindowRef = null;
+      let isSearchEnabled = false;
+
+      let sharedAC = null;
+      function getAC() {
+        if (!sharedAC)
+          sharedAC = new (window.AudioContext || window.webkitAudioContext)();
+        return sharedAC;
+      }
+
+      let sessionHistory = (function () {
+        try {
+          const parsed = JSON.parse(
+            sessionStorage.getItem("quizSessionHistory") || "[]",
+          );
+          return Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+          return [];
+        }
+      })();
+
+      let skipLock = false;
+      let isOptimizing = false;
+
+      function escapeHtml(str) {
+        return String(str ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      /* ═══════════════════════════════════════════════════════════
+       TOAST HELPER
+    ═══════════════════════════════════════════════════════════ */
+      function showToast(msg) {
+        const el = document.getElementById("toastBanner");
+        if (!el) return;
+        clearTimeout(toastTimeout);
+        el.textContent = msg;
+        el.style.display = "block";
+        toastTimeout = setTimeout(() => {
+          el.style.display = "none";
+        }, 3000);
+      }
+
+      /* ═══════════════════════════════════════════════════════════
+       DARK MODE TOGGLE
+    ═══════════════════════════════════════════════════════════ */
+      let darkModeOverride = localStorage.getItem("darkModeOverride") || "auto";
+      applyDarkMode();
+
+      function applyDarkMode() {
+        document.body.classList.remove("force-dark", "force-light");
+        const btn = document.getElementById("darkModeBtn");
+        const homeBtn = document.getElementById("homeDarkModeBtn");
+        let icon = "🌙";
+        let homeLabel = "Dark";
+        if (darkModeOverride === "dark") {
+          document.body.classList.add("force-dark");
+          icon = "☀️";
+          homeLabel = "Light";
+        } else if (darkModeOverride === "light") {
+          document.body.classList.add("force-light");
+          icon = "🌙";
+          homeLabel = "Dark";
+        } else {
+          const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+          icon = isDark ? "☀️" : "🌙";
+          homeLabel = isDark ? "Light" : "Dark";
+        }
+        if (btn) btn.innerHTML = icon;
+        if (homeBtn) homeBtn.textContent = homeLabel;
+      }
+
+      window
+        .matchMedia("(prefers-color-scheme: dark)")
+        .addEventListener("change", () => {
+          if (darkModeOverride === "auto") applyDarkMode();
+        });
+
+      function toggleDarkMode() {
+        const cycle = { auto: "dark", dark: "light", light: "auto" };
+        darkModeOverride = cycle[darkModeOverride] || "auto";
+        localStorage.setItem("darkModeOverride", darkModeOverride);
+        applyDarkMode();
+      }
+
+      /* ═══════════════════════════════════════════════════════════
+       FEATURE 2: PRACTICE MODE vs EXAM MODE SELECTOR
+    ═══════════════════════════════════════════════════════════ */
+      function setQuizMode(mode) {
+        quizMode = mode === "EXAM" ? "EXAM" : "PRACTICE";
+        localStorage.setItem("quiz_mode", quizMode);
+        const pBtn = document.getElementById("modePracticeBtn");
+        const eBtn = document.getElementById("modeExamBtn");
+        if (pBtn && eBtn) {
+          if (quizMode === "EXAM") {
+            eBtn.className =
+              "px-3 py-2 rounded-lg text-xs font-extrabold flex items-center gap-1.5 cursor-pointer transition whitespace-nowrap bg-indigo-600 text-white shadow-sm";
+            pBtn.className =
+              "px-3 py-2 rounded-lg text-xs font-extrabold flex items-center gap-1.5 cursor-pointer transition whitespace-nowrap text-slate-600 hover:text-slate-900";
+          } else {
+            pBtn.className =
+              "px-3 py-2 rounded-lg text-xs font-extrabold flex items-center gap-1.5 cursor-pointer transition whitespace-nowrap bg-blue-600 text-white shadow-sm";
+            eBtn.className =
+              "px-3 py-2 rounded-lg text-xs font-extrabold flex items-center gap-1.5 cursor-pointer transition whitespace-nowrap text-slate-600 hover:text-slate-900";
+          }
+        }
+      }
+
+      function formatExamTime(seconds) {
+        const s = Math.max(0, Math.floor(seconds));
+        const hrs = Math.floor(s / 3600);
+        const mins = Math.floor((s % 3600) / 60);
+        const secs = s % 60;
+        if (hrs > 0) {
+          return (
+            String(hrs).padStart(2, "0") +
+            ":" +
+            String(mins).padStart(2, "0") +
+            ":" +
+            String(secs).padStart(2, "0")
+          );
+        }
+        return (
+          String(mins).padStart(2, "0") + ":" + String(secs).padStart(2, "0")
+        );
+      }
+
+      /* ═══════════════════════════════════════════════════════════
+       FEATURE 5: SELECT TIME FOR EVERY QUESTION (HOME PAGE)
+    ═══════════════════════════════════════════════════════════ */
+      function updateTimingLabels() {
+        const hLabel = document.getElementById("homeTimingLabel");
+        if (hLabel) hLabel.textContent = questionTimeSeconds + "s";
+      }
+
+      function openQuestionTimingModal() {
+        setModalTimeValue(questionTimeSeconds);
+        document.getElementById("questionTimingModal").style.display = "flex";
+      }
+
+      function closeQuestionTimingModal() {
+        document.getElementById("questionTimingModal").style.display = "none";
+      }
+
+      function stepModalTime(delta) {
+        setModalTimeValue(
+          Math.min(600, Math.max(5, modalTempTimeSeconds + delta)),
+        );
+      }
+
+      function setModalTimeValue(val, fromInput) {
+        const parsed = parseInt(val, 10);
+        if (!isNaN(parsed) && parsed > 0) {
+          modalTempTimeSeconds = Math.min(600, Math.max(5, parsed));
+        }
+        document.getElementById("modalTimeHeroDisplay").textContent =
+          modalTempTimeSeconds + "s";
+        document.getElementById("modalTimeSlider").value = Math.min(
+          180,
+          Math.max(5, modalTempTimeSeconds),
+        );
+        if (!fromInput) {
+          document.getElementById("modalCustomTimeInput").value =
+            modalTempTimeSeconds;
+        }
+        document.querySelectorAll(".time-preset-chip").forEach((chip) => {
+          const sec = parseInt(chip.getAttribute("data-sec"), 10);
+          if (sec === modalTempTimeSeconds) {
+            chip.className =
+              "time-preset-chip px-3.5 py-2 rounded-xl text-xs font-bold border cursor-pointer transition bg-blue-600 text-white border-blue-600 shadow-sm";
+          } else {
+            chip.className =
+              "time-preset-chip px-3.5 py-2 rounded-xl text-xs font-bold border cursor-pointer transition bg-slate-100 text-slate-800 border-slate-300";
+          }
+        });
+      }
+
+      function applyQuestionTiming() {
+        const rawInput = document.getElementById("modalCustomTimeInput").value;
+        const parsed = parseInt(rawInput, 10);
+        questionTimeSeconds = !isNaN(parsed)
+          ? Math.min(600, Math.max(5, parsed))
+          : modalTempTimeSeconds;
+        localStorage.setItem(
+          "question_time_seconds",
+          String(questionTimeSeconds),
+        );
+        updateTimingLabels();
+        closeQuestionTimingModal();
+        showToast(`⏱️ Question Timing set to ${questionTimeSeconds}s`);
+      }
+
+      /* ═══════════════════════════════════════════════════════════
+       FEATURE 4: SELECT NO. OF QUESTIONS IN QUIZ
+    ═══════════════════════════════════════════════════════════ */
+      function updateNumQuestionsLabel() {
+        const lbl = document.getElementById("numQuestionsLabel");
+        if (lbl) lbl.textContent = "Q: " + selectedNumQuestions;
+      }
+
+      function openQuestionQtyModal() {
+        const maxQ = Math.max(1, rawItems.length || selectedNumQuestions);
+        modalTempQty = Math.min(maxQ, Math.max(1, selectedNumQuestions));
+        const slider = document.getElementById("modalQtySlider");
+        slider.max = Math.max(2, maxQ);
+        slider.disabled = maxQ <= 1;
+        document.getElementById("modalQtySliderMaxLabel").textContent =
+          "Max: " + maxQ;
+        setModalQtyValue(modalTempQty);
+        document.getElementById("questionQtyModal").style.display = "flex";
+      }
+
+      function closeQuestionQtyModal() {
+        document.getElementById("questionQtyModal").style.display = "none";
+      }
+
+      function stepModalQty(delta) {
+        const maxQ = Math.max(1, rawItems.length || selectedNumQuestions);
+        setModalQtyValue(Math.min(maxQ, Math.max(1, modalTempQty + delta)));
+      }
+
+      function setModalQtyValue(val) {
+        const maxQ = Math.max(1, rawItems.length || selectedNumQuestions);
+        const parsed = parseInt(val, 10) || 1;
+        modalTempQty = Math.min(maxQ, Math.max(1, parsed));
+        document.getElementById("modalQtyHeroDisplay").textContent =
+          modalTempQty;
+        document.getElementById("modalQtyMaxSubtext").textContent =
+          `out of ${maxQ} Questions`;
+        document.getElementById("modalQtySlider").value = modalTempQty;
+
+        const presets = [5, 10, 15, 20, 30];
+        const chipContainer = document.getElementById("modalQtyPresetChips");
+        chipContainer.innerHTML = "";
+        presets.forEach((p) => {
+          const isAvail = p <= maxQ;
+          const isSel = modalTempQty === p && isAvail;
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.textContent = p;
+          btn.onclick = () => setModalQtyValue(Math.min(maxQ, p));
+          btn.className = isSel
+            ? "px-4 py-2 rounded-xl text-sm font-bold border cursor-pointer transition bg-blue-600 text-white border-blue-600 shadow-sm"
+            : isAvail
+              ? "px-4 py-2 rounded-xl text-sm font-bold border cursor-pointer transition bg-slate-100 text-slate-800 border-slate-300 hover:bg-slate-200"
+              : "px-4 py-2 rounded-xl text-sm font-bold border cursor-pointer transition bg-slate-50 text-slate-400 border-slate-200";
+          chipContainer.appendChild(btn);
+        });
+
+        const allBtn = document.createElement("button");
+        allBtn.type = "button";
+        allBtn.textContent = `All (${maxQ})`;
+        allBtn.onclick = () => setModalQtyValue(maxQ);
+        allBtn.className =
+          modalTempQty === maxQ
+            ? "px-4 py-2 rounded-xl text-sm font-bold border cursor-pointer transition bg-indigo-600 text-white border-indigo-600 shadow-sm"
+            : "px-4 py-2 rounded-xl text-sm font-bold border cursor-pointer transition bg-indigo-50 text-indigo-700 border-indigo-200";
+        chipContainer.appendChild(allBtn);
+      }
+
+      function applyQuestionQty() {
+        selectedNumQuestions = modalTempQty;
+        updateNumQuestionsLabel();
+        closeQuestionQtyModal();
+        startQuiz();
+      }
+
+      /* ═══════════════════════════════════════════════════════════
+       FEATURE 3: COPY & MAKE AI PROMPT DIALOG
+    ═══════════════════════════════════════════════════════════ */
+      function openCopyPromptModal() {
+        document.getElementById("copyPromptModal").style.display = "flex";
+      }
+
+      function closeCopyPromptModal() {
+        document.getElementById("copyPromptModal").style.display = "none";
+      }
+
+      function selectPromptCount(cnt) {
+        promptSelectedCount = Math.min(200, Math.max(4, parseInt(cnt, 10) || 50));
+        document.getElementById("promptCustomCountInput").value =
+          promptSelectedCount;
+        updatePromptCountChips();
+      }
+
+      function syncPromptCountInput(val) {
+        const parsed = parseInt(val, 10);
+        if (!isNaN(parsed) && parsed >= 1) {
+          promptSelectedCount = Math.min(200, Math.max(4, parsed));
+          updatePromptCountChips();
+        }
+      }
+
+      function updatePromptCountChips() {
+        document.querySelectorAll(".prompt-count-chip").forEach((chip) => {
+          const c = parseInt(chip.getAttribute("data-count"), 10);
+          chip.className =
+            c === promptSelectedCount
+              ? "prompt-count-chip px-3.5 py-1.5 rounded-xl text-xs font-bold border cursor-pointer transition bg-blue-600 text-white border-blue-600 shadow-xs"
+              : "prompt-count-chip px-3.5 py-1.5 rounded-xl text-xs font-bold border cursor-pointer transition bg-slate-100 text-slate-800 border-slate-300";
+        });
+      }
+
+      function selectPromptDiff(diff) {
+        promptSelectedDifficulty = diff;
+        document.querySelectorAll(".prompt-diff-chip").forEach((chip) => {
+          const d = chip.getAttribute("data-diff");
+          chip.className =
+            d === promptSelectedDifficulty
+              ? "prompt-diff-chip px-3.5 py-1.5 rounded-xl text-xs font-bold border cursor-pointer transition bg-indigo-600 text-white border-indigo-600 shadow-xs"
+              : "prompt-diff-chip px-3.5 py-1.5 rounded-xl text-xs font-bold border cursor-pointer transition bg-slate-100 text-slate-800 border-slate-300";
+        });
+      }
+
+      function selectPromptLang(lang) {
+        promptSelectedLanguage = lang;
+        document.querySelectorAll(".prompt-lang-chip").forEach((chip) => {
+          const l = chip.getAttribute("data-lang");
+          chip.className =
+            l === promptSelectedLanguage
+              ? "prompt-lang-chip px-3.5 py-1.5 rounded-xl text-xs font-bold border cursor-pointer transition bg-violet-600 text-white border-violet-600 shadow-xs"
+              : "prompt-lang-chip px-3.5 py-1.5 rounded-xl text-xs font-bold border cursor-pointer transition bg-slate-100 text-slate-800 border-slate-300";
+        });
+      }
+
+      function buildVisualAiPrompt(options) {
+        const count = Math.min(200, Math.max(4, options.questionCount || 50));
+        const difficulty = options.difficulty || "Medium";
+        const languageStyle = options.languageStyle || "Hinglish";
+        const topic = (options.topicOrNotes || "").trim();
+
+        const langRule =
+          languageStyle === "English"
+            ? '* Keep "Name" and "Description" in clear English. Provide the common Hindi transliteration or name in "Hindi".'
+            : languageStyle === "Hindi"
+              ? '* Provide accurate Hindi names in "Hindi" and write "Description" in pure, natural Hindi (1–2 informative sentences) while keeping scientific/technical terms in English.'
+              : '* Keep all scientific, technical, brand, product, software, hardware, and industry-standard terms in English. Use common Hindi names in "Hindi" and write "Description" in easy Hinglish/Hindi (1–2 informative sentences).';
+
+        const topicInstruction = topic
+          ? `Topic / Study Notes:\n"${topic}"\n\nGenerate a valid JSON array of exactly ${count} unique items for the above topic using this format:`
+          : `I will provide a topic in my next message. Do NOT generate JSON until the topic is given.\n\nWhen a topic is provided, generate a valid JSON array of exactly ${count} unique items using this format:`;
+
+        const closingLine = topic
+          ? "Begin generating the raw JSON array now."
+          : "If you understand, reply exactly:\nReady for your content or topic.";
+
+        return `Act as an Expert Educational Content Creator for a Visual Identification Quiz.
+
+Difficulty Level: ${difficulty}
+Language Style: ${languageStyle}
+
+${topicInstruction}
+
+[
+  {
+    "Name": "English Name",
+    "Hindi": "हिंदी नाम",
+    "Description": "हिंदी विवरण",
+    "link": "Direct image URL"
+  }
+]
+
+Rules:
+
+${langRule}
+* Target Difficulty: ${difficulty} level items suitable for visual identification.
+* Every item must include a direct, publicly accessible image URL suitable for visual identification.
+* Prefer fast-loading thumbnail images. For Wikimedia Commons use:
+  https://commons.wikimedia.org/wiki/Special:FilePath/Filename.jpg?width=600
+* Generate exactly ${count} unique, topic-relevant items with accurate names, descriptions, and images.
+* Output ONLY the raw pretty-printed JSON array.
+* No markdown, code blocks, explanations, comments, or extra text.
+
+${closingLine}`;
+      }
+
+      function generateAndCopyPrompt() {
+        const topic = document.getElementById("promptTopicInput").value;
+        const rawCnt = parseInt(
+          document.getElementById("promptCustomCountInput").value,
+          10,
+        );
+        const finalCount = !isNaN(rawCnt)
+          ? Math.min(200, Math.max(4, rawCnt))
+          : promptSelectedCount;
+
+        const promptText = buildVisualAiPrompt({
+          topicOrNotes: topic,
+          questionCount: finalCount,
+          difficulty: promptSelectedDifficulty,
+          languageStyle: promptSelectedLanguage,
+        });
+
+        const onCopied = () => {
+          closeCopyPromptModal();
+          const btn = document.getElementById("copyPromptBtn");
+          if (btn) {
+            const orig = btn.textContent;
+            btn.textContent = "Copied!";
+            setTimeout(() => {
+              btn.textContent = orig;
+            }, 2500);
+          }
+          showToast(
+            `AI Prompt Copied (${finalCount} Items • ${promptSelectedDifficulty} • ${promptSelectedLanguage})`,
+          );
+        };
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard
+            .writeText(promptText)
+            .then(onCopied)
+            .catch(() => fallbackCopyText(promptText, onCopied));
+        } else {
+          fallbackCopyText(promptText, onCopied);
+        }
+      }
+
+      function fallbackCopyText(text, cb) {
+        try {
+          const ta = document.createElement("textarea");
+          ta.value = text;
+          ta.style.position = "fixed";
+          ta.style.opacity = "0";
+          document.body.appendChild(ta);
+          ta.focus();
+          ta.select();
+          document.execCommand("copy");
+          document.body.removeChild(ta);
+          if (cb) cb();
+        } catch (e) {
+          showToast("Clipboard access denied.");
+        }
+      }
+
+      /* ═══════════════════════════════════════════════════════════
+       ROBUST JSON PARSER & ITEM NORMALIZER
+    ═══════════════════════════════════════════════════════════ */
+      function safeParsePhotoData(raw) {
+        let txt = String(raw || "").trim();
+        if (!txt) return [];
+        if (!txt.startsWith("[")) txt = "[" + txt;
+        if (!txt.endsWith("]")) txt = txt.replace(/,\s*$/, "") + "]";
+        try {
+          const parsed = JSON.parse(txt.replace(/,\s*([}\]])/g, "$1"));
+          return Array.isArray(parsed) ? parsed : [parsed];
+        } catch (e) {
+          let extractedItems = [];
+          const objStrings = txt.match(/\{[\s\S]*?\}/g) || [];
+          objStrings.forEach((objStr) => {
+            try {
+              let clean = objStr.replace(/,\s*\}/g, "}");
+              clean = clean.replace(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":');
+              extractedItems.push(JSON.parse(clean));
+            } catch (err) {}
+          });
+          return extractedItems;
+        }
+      }
+
+      function normalizeQuizItems(extractedItems) {
+        if (!Array.isArray(extractedItems)) return [];
+        return extractedItems
+          .filter((item) => item && typeof item === "object")
+          .map((item) => {
+            let fixedLink = item.link || item.Link || item.LINK || "";
+            let parsedName = item.Name || item.name || item.NAME || "";
+            let parsedHindi = item.Hindi || item.hindi || item.HINDI || "";
+            let parsedDesc =
+              item.Description ||
+              item.description ||
+              item.DESCRIPTION ||
+              item.desc ||
+              "";
+
+            if (
+              fixedLink &&
+              (fixedLink.includes("wikimedia.org") ||
+                fixedLink.includes("wikipedia.org")) &&
+              !fixedLink.includes("/thumb/")
+            ) {
+              let cleanUrl = fixedLink.split("?")[0];
+              let rawPart = cleanUrl.substring(cleanUrl.lastIndexOf("/") + 1);
+              let filename = rawPart;
+              try {
+                filename = decodeURIComponent(rawPart);
+              } catch (e) {}
+              filename = filename.replace(/^File:/i, "");
+              if (filename) {
+                fixedLink = `https://commons.wikimedia.org/wiki/Special:FilePath/${filename}?width=600`;
+              }
+            }
+            return {
+              Name: String(parsedName).trim(),
+              Hindi: String(parsedHindi).trim(),
+              Description: String(parsedDesc).trim(),
+              link: String(fixedLink).trim(),
+            };
+          })
+          .filter((item) => item.Name && item.link);
+      }
+
+      /* ═══════════════════════════════════════════════════════════
+       IMAGE VALIDATOR
+    ═══════════════════════════════════════════════════════════ */
+      function checkImage(url) {
+        return new Promise((resolve) => {
+          let settled = false;
+          const finish = (ok) => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timer);
+            resolve(ok);
+          };
+          const timer = setTimeout(() => finish(false), 5000);
+          const img = new Image();
+          img.onload = () => finish(true);
+          img.onerror = () => finish(false);
+          img.src = url;
+        });
+      }
+
+      function handleImageFallback(img) {
+        const loader = img.previousElementSibling;
+        if (loader) loader.innerHTML = "❌ Image Error";
+        img.style.display = "none";
+      }
+
+      /* ═══════════════════════════════════════════════════════════
+       FEATURE 1: QUIZ DATABASE & LOCAL STORAGE (IMPORT / EXPORT / SHARE / STARRED)
+    ═══════════════════════════════════════════════════════════ */
+      function getSavedQuizzes() {
+        try {
+          const raw = JSON.parse(
+            localStorage.getItem("savedVisualQuizzes") || "[]",
+          );
+          if (!Array.isArray(raw)) return [];
+          return raw.map((item, idx) => {
+            const dataStr = String(item.data || "[]");
+            const count =
+              typeof item.questionCount === "number" && item.questionCount > 0
+                ? item.questionCount
+                : normalizeQuizItems(safeParsePhotoData(dataStr)).length;
+            const dateIso = item.date || new Date().toISOString();
+            return {
+              id: String(item.id || `vq_${idx}_${Date.now()}`),
+              name: String(item.name || "Untitled Set").trim(),
+              category: String(item.category || "General").trim() || "General",
+              data: dataStr,
+              date: dateIso,
+              questionCount: count,
+            };
+          });
+        } catch (e) {
+          return [];
+        }
+      }
+
+      function setSavedQuizzes(list) {
+        localStorage.setItem("savedVisualQuizzes", JSON.stringify(list));
+        updateDatabaseBtnCount();
+        renderDatabaseScreen();
+      }
+
+      function saveStarredItems(list) {
+        starredItems = list;
+        localStorage.setItem("starredVisualItemsBank", JSON.stringify(list));
+        renderDatabaseScreen();
+      }
+
+      function saveQuizToStorage() {
+        const txt = document.getElementById("quizInput").value.trim();
+        if (!txt) return showToast("⚠️ Please paste the JSON data first.");
+
+        const validItems = normalizeQuizItems(safeParsePhotoData(txt));
+        if (validItems.length < 4) {
+          return showToast(
+            `⚠️ Need at least 4 valid items to save (found ${validItems.length}).`,
+          );
+        }
+
+        let name = document.getElementById("quizName").value.trim();
+        if (!name)
+          name = "Visual Set " + new Date().toLocaleDateString("en-IN");
+        let category =
+          document.getElementById("quizCategory").value.trim() || "General";
+
+        const saved = getSavedQuizzes();
+        const existingIdx = saved.findIndex(
+          (q) => q.name.toLowerCase() === name.toLowerCase(),
+        );
+        const entry = {
+          id: existingIdx >= 0 ? saved[existingIdx].id : `vq_${Date.now()}`,
+          name,
+          category,
+          data: JSON.stringify(validItems, null, 2),
+          date: new Date().toISOString(),
+          questionCount: validItems.length,
+        };
+        if (existingIdx >= 0) {
+          saved[existingIdx] = entry;
+        } else {
+          saved.unshift(entry);
+        }
+        setSavedQuizzes(saved);
+        showToast(`✅ Dataset Saved to Database: ${name} (${category})`);
+      }
+
+      function updateDatabaseBtnCount() {
+        const saved = getSavedQuizzes();
+        const dbBtn = document.getElementById("openQuizDatabaseBtn");
+        if (dbBtn) dbBtn.textContent = `Database (${saved.length})`;
+      }
+
+      function deleteSavedQuiz(idx, e) {
+        if (e) e.stopPropagation();
+        const saved = getSavedQuizzes();
+        saved.splice(idx, 1);
+        setSavedQuizzes(saved);
+        showToast("🗑 Dataset deleted from Database");
+      }
+
+      /* ─── QUIZ DATABASE FULL SCREEN ─── */
+      function openDatabaseScreen() {
+        document.getElementById("homePage").style.display = "none";
+        document.getElementById("mainQuizWrapper").style.display = "none";
+        document.getElementById("quizDatabasePage").style.display = "flex";
+        renderDatabaseScreen();
+      }
+
+      function closeDatabaseScreen() {
+        document.getElementById("quizDatabasePage").style.display = "none";
+        document.getElementById("homePage").style.display = "flex";
+      }
+
+      function clearDatabaseSearch() {
+        const searchInput = document.getElementById("dbSearchInput");
+        if (searchInput) searchInput.value = "";
+        renderDatabaseScreen();
+      }
+
+      function selectDatabaseCategory(cat) {
+        dbSelectedCategoryFilter = cat;
+        renderDatabaseScreen();
+      }
+
+      function renderDatabaseScreen() {
+        const saved = getSavedQuizzes();
+        const searchInput = document.getElementById("dbSearchInput");
+        const query = (searchInput ? searchInput.value : "")
+          .trim()
+          .toLowerCase();
+        const clearSearchBtn = document.getElementById("dbSearchClearBtn");
+        if (clearSearchBtn) {
+          clearSearchBtn.style.display = query ? "block" : "none";
+        }
+
+        // Category counts
+        const catMap = new Map();
+        saved.forEach((q) => {
+          const cat = (q.category || "General").trim() || "General";
+          catMap.set(cat, (catMap.get(cat) || 0) + 1);
+        });
+
+        if (
+          dbSelectedCategoryFilter !== "All" &&
+          !Array.from(catMap.keys()).some(
+            (k) => k.toLowerCase() === dbSelectedCategoryFilter.toLowerCase(),
+          )
+        ) {
+          dbSelectedCategoryFilter = "All";
+        }
+
+        const subStats = document.getElementById("dbSubtitleStats");
+        if (subStats) {
+          subStats.textContent = `${saved.length} Quizzes • ${catMap.size} Categories`;
+        }
+
+        const starredSummary = document.getElementById("dbStarredSummaryText");
+        if (starredSummary) {
+          starredSummary.textContent =
+            starredItems.length > 0
+              ? `${starredItems.length} Important Items saved • Tap to View, Play or Export`
+              : "Tap Star during any quiz to save important visual items here";
+        }
+
+        // Render Category Filter Chips
+        const chipsWrap = document.getElementById("dbCategoryChips");
+        if (chipsWrap) {
+          chipsWrap.innerHTML = "";
+          if (saved.length > 0) {
+            const allBtn = document.createElement("button");
+            allBtn.type = "button";
+            allBtn.textContent = `All (${saved.length})`;
+            allBtn.onclick = () => selectDatabaseCategory("All");
+            allBtn.className =
+              dbSelectedCategoryFilter === "All"
+                ? "px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shrink-0 cursor-pointer transition bg-blue-600 text-white"
+                : "px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shrink-0 cursor-pointer transition bg-slate-100 text-slate-600 hover:bg-slate-200";
+            chipsWrap.appendChild(allBtn);
+
+            catMap.forEach((count, cat) => {
+              const btn = document.createElement("button");
+              btn.type = "button";
+              btn.textContent = `${cat} (${count})`;
+              btn.onclick = () => selectDatabaseCategory(cat);
+              const isSel =
+                dbSelectedCategoryFilter.toLowerCase() === cat.toLowerCase();
+              btn.className = isSel
+                ? "px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shrink-0 cursor-pointer transition bg-blue-600 text-white"
+                : "px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shrink-0 cursor-pointer transition bg-slate-100 text-slate-600 hover:bg-slate-200";
+              chipsWrap.appendChild(btn);
+            });
+          }
+        }
+
+        // Filter & Group Quizzes
+        const filtered = saved.filter((item) => {
+          const cat = (item.category || "General").trim() || "General";
+          const matchesCat =
+            dbSelectedCategoryFilter === "All" ||
+            cat.toLowerCase() === dbSelectedCategoryFilter.toLowerCase();
+          const matchesQuery =
+            !query ||
+            item.name.toLowerCase().includes(query) ||
+            cat.toLowerCase().includes(query);
+          return matchesCat && matchesQuery;
+        });
+
+        const container = document.getElementById("dbQuizListContainer");
+        if (!container) return;
+        container.innerHTML = "";
+
+        if (saved.length === 0) {
+          container.innerHTML = `
+            <div class="db-card bg-white rounded-2xl p-8 text-center shadow-sm border border-slate-200/80 flex flex-col items-center gap-2">
+              <div class="text-4xl">📁</div>
+              <div class="db-title text-base font-bold text-slate-900">No Saved Quizzes Yet</div>
+              <p class="text-sm text-slate-500 max-w-md">Save a dataset from the Home page or tap Import above to load a .txt or .json quiz file.</p>
+            </div>`;
+          return;
+        }
+
+        if (filtered.length === 0) {
+          container.innerHTML = `
+            <div class="db-card bg-white rounded-2xl p-6 text-center shadow-sm border border-slate-200/80 text-sm text-slate-500">
+              No quizzes match your search or category filter.
+            </div>`;
+          return;
+        }
+
+        const groups = new Map();
+        filtered.forEach((q) => {
+          const cat = (q.category || "General").trim() || "General";
+          if (!groups.has(cat)) groups.set(cat, []);
+          groups.get(cat).push(q);
+        });
+
+        groups.forEach((quizzesInCat, categoryName) => {
+          const groupDiv = document.createElement("div");
+          groupDiv.className = "flex flex-col gap-2";
+
+          groupDiv.innerHTML = `
+            <div class="bg-indigo-100/90 rounded-xl px-3.5 py-2 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-base">📁</span>
+                <span class="text-sm font-extrabold text-indigo-950">${escapeHtml(categoryName)}</span>
+              </div>
+              <span class="px-2.5 py-0.5 rounded-full bg-indigo-600 text-white text-xs font-bold">
+                ${quizzesInCat.length} Quiz${quizzesInCat.length > 1 ? "zes" : ""}
+              </span>
+            </div>`;
+
+          quizzesInCat.forEach((quizItem) => {
+            const origIndex = saved.findIndex((s) => s.id === quizItem.id);
+            const card = document.createElement("div");
+            card.className =
+              "db-card bg-white rounded-xl px-3.5 py-2.5 shadow-sm border border-slate-200/80 hover:border-blue-400 flex items-center justify-between gap-3 cursor-pointer transition";
+            card.innerHTML = `
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="db-title text-sm font-bold text-slate-900 truncate">${escapeHtml(quizItem.name)}</span>
+                  <span class="px-2 py-0.5 rounded-md bg-indigo-600/12 text-indigo-600 text-xs font-bold">${escapeHtml(categoryName)}</span>
+                </div>
+                <div class="text-xs text-slate-500 mt-0.5">
+                  ${new Date(quizItem.date).toLocaleString("en-IN")} • ${quizItem.questionCount} Items
+                </div>
+              </div>
+              <div class="flex items-center gap-1 shrink-0">
+                <button type="button" title="Start Quiz" class="db-play-btn w-9 h-9 rounded-full hover:bg-blue-50 text-blue-600 flex items-center justify-center text-base cursor-pointer">▶</button>
+                <button type="button" title="Export Quiz (.txt)" class="db-txt-btn w-9 h-9 rounded-full hover:bg-indigo-50 text-indigo-600 flex items-center justify-center text-base cursor-pointer">📤</button>
+                <button type="button" title="Download Offline HTML" class="db-html-btn w-9 h-9 rounded-full hover:bg-sky-50 text-sky-600 flex items-center justify-center text-base cursor-pointer">📥</button>
+                <button type="button" title="Delete Saved Quiz" class="db-del-btn w-9 h-9 rounded-full hover:bg-red-50 text-red-600 flex items-center justify-center text-base cursor-pointer">🗑</button>
+              </div>`;
+
+            card.onclick = (e) => {
+              if (e.target.closest("button")) return;
+              document.getElementById("quizInput").value = quizItem.data;
+              document.getElementById("quizName").value = quizItem.name;
+              document.getElementById("quizCategory").value = categoryName;
+              closeDatabaseScreen();
+              showToast(`📂 Loaded: ${quizItem.name}`);
+            };
+
+            card.querySelector(".db-play-btn").onclick = (e) => {
+              e.stopPropagation();
+              document.getElementById("quizInput").value = quizItem.data;
+              document.getElementById("quizName").value = quizItem.name;
+              document.getElementById("quizCategory").value = categoryName;
+              closeDatabaseScreen();
+              createQuizFromText();
+            };
+
+            card.querySelector(".db-txt-btn").onclick = (e) => {
+              e.stopPropagation();
+              exportSingleDatabaseTxt(quizItem);
+            };
+
+            card.querySelector(".db-html-btn").onclick = (e) => {
+              e.stopPropagation();
+              exportSavedQuiz(origIndex, e);
+            };
+
+            card.querySelector(".db-del-btn").onclick = (e) => {
+              e.stopPropagation();
+              deleteSavedQuiz(origIndex, e);
+            };
+
+            groupDiv.appendChild(card);
+          });
+
+          container.appendChild(groupDiv);
+        });
+      }
+
+      function exportQuizzesToEditableText(quizzes, starredList) {
+        const blocks = [];
+        quizzes.forEach((q) => {
+          const cat = (q.category || "General").trim() || "General";
+          blocks.push(
+            `=== QUIZ: ${q.name} | CATEGORY: ${cat} ===\n${String(q.data || "").trim()}`,
+          );
+        });
+        if (starredList && starredList.length > 0) {
+          blocks.push(
+            `=== STARRED_ITEMS ===\n${JSON.stringify(starredList, null, 2)}`,
+          );
+        }
+        return blocks.join("\n\n");
+      }
+
+      function downloadTxtFile(filename, content) {
+        const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      function exportAllDatabaseTxt() {
+        const saved = getSavedQuizzes();
+        if (saved.length === 0 && starredItems.length === 0) {
+          return showToast("⚠️ Database is empty.");
+        }
+        const content = exportQuizzesToEditableText(saved, starredItems);
+        downloadTxtFile("visual_quizzes_database.txt", content);
+        showToast("✅ Exported visual_quizzes_database.txt");
+      }
+
+      function exportSingleDatabaseTxt(quizItem) {
+        const content = exportQuizzesToEditableText([quizItem], []);
+        const safeName =
+          quizItem.name.replace(/[^a-z0-9_\-]/gi, "_").toLowerCase() ||
+          "visual_quiz";
+        downloadTxtFile(`${safeName}.txt`, content);
+        showToast(`✅ Exported ${safeName}.txt`);
+      }
+
+      async function shareAllDatabaseTxt() {
+        const saved = getSavedQuizzes();
+        if (saved.length === 0 && starredItems.length === 0) {
+          return showToast("⚠️ Database is empty.");
+        }
+        const content = exportQuizzesToEditableText(saved, starredItems);
+        const fileName = "visual_quizzes_database.txt";
+        if (navigator.share) {
+          try {
+            await navigator.share({ title: fileName, text: content });
+            return;
+          } catch (e) {}
+        }
+        fallbackCopyText(content, () => {
+          showToast("📋 Database copied to clipboard & downloaded!");
+        });
+        downloadTxtFile(fileName, content);
+      }
+
+      function importQuizzesFromText(rawText, fallbackName) {
+        const text = String(rawText || "").trim();
+        if (!text) return 0;
+        const saved = getSavedQuizzes();
+        let updatedStarred = [...starredItems];
+        let importedCount = 0;
+
+        if (/===\s*(QUIZ\s*:|STARRED_ITEMS)/i.test(text)) {
+          const sections = text.split(/(?====\s*(?:QUIZ\s*:|STARRED_ITEMS))/i);
+          sections.forEach((sec, idx) => {
+            const trimmed = sec.trim();
+            if (!trimmed) return;
+
+            const starredMatch = trimmed.match(
+              /^===\s*STARRED_ITEMS\s*===\s*([\s\S]*)$/i,
+            );
+            if (starredMatch) {
+              const items = normalizeQuizItems(
+                safeParsePhotoData(starredMatch[1]),
+              );
+              items.forEach((it) => {
+                if (
+                  !updatedStarred.some(
+                    (s) => s.Name.toLowerCase() === it.Name.toLowerCase(),
+                  )
+                ) {
+                  updatedStarred.unshift(it);
+                }
+              });
+              if (items.length > 0) importedCount++;
+              return;
+            }
+
+            const headerMatch = trimmed.match(
+              /^===\s*QUIZ\s*:\s*([^|=\n]+?)(?:\s*\|\s*CATEGORY\s*:\s*([^=\n]+?))?\s*===\s*([\s\S]*)$/i,
+            );
+            if (headerMatch) {
+              const name =
+                headerMatch[1].trim() ||
+                `${fallbackName || "Imported Set"} ${idx + 1}`;
+              const category =
+                (headerMatch[2] || "General").trim() || "General";
+              const body = headerMatch[3].trim();
+              const validItems = normalizeQuizItems(safeParsePhotoData(body));
+              if (validItems.length >= 4) {
+                const existingIdx = saved.findIndex(
+                  (q) => q.name.toLowerCase() === name.toLowerCase(),
+                );
+                const entry = {
+                  id:
+                    existingIdx >= 0
+                      ? saved[existingIdx].id
+                      : `vq_${Date.now()}_${idx}`,
+                  name,
+                  category,
+                  data: JSON.stringify(validItems, null, 2),
+                  date: new Date().toISOString(),
+                  questionCount: validItems.length,
+                };
+                if (existingIdx >= 0) saved[existingIdx] = entry;
+                else saved.unshift(entry);
+                importedCount++;
+              }
+            }
+          });
+        } else {
+          const validItems = normalizeQuizItems(safeParsePhotoData(text));
+          if (validItems.length >= 4) {
+            const name = fallbackName || "Imported Set";
+            const existingIdx = saved.findIndex(
+              (q) => q.name.toLowerCase() === name.toLowerCase(),
+            );
+            const entry = {
+              id:
+                existingIdx >= 0 ? saved[existingIdx].id : `vq_${Date.now()}`,
+              name,
+              category: "General",
+              data: JSON.stringify(validItems, null, 2),
+              date: new Date().toISOString(),
+              questionCount: validItems.length,
+            };
+            if (existingIdx >= 0) saved[existingIdx] = entry;
+            else saved.unshift(entry);
+            importedCount = 1;
+          }
+        }
+
+        if (importedCount > 0) {
+          saveStarredItems(updatedStarred);
+          setSavedQuizzes(saved);
+          playSound("correct");
+          showToast(`✅ ${importedCount} Dataset(s) Imported into Database!`);
+        } else {
+          showToast("⚠️ No valid dataset (minimum 4 items) found in file.");
+        }
+        return importedCount;
+      }
+
+      function handleDatabaseFileImport(event) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const content = String(ev.target.result || "");
+          const fallbackName =
+            file.name.replace(/\.[^/.]+$/, "") || "Imported Set";
+          importQuizzesFromText(content, fallbackName);
+        };
+        reader.readAsText(file);
+        event.target.value = "";
+      }
+
+      function clearAllDatabaseConfirm() {
+        const saved = getSavedQuizzes();
+        if (saved.length === 0 && starredItems.length === 0) {
+          return showToast("⚠️ Database is already empty.");
+        }
+        const txtEl = document.getElementById("clearDbConfirmText");
+        if (txtEl) {
+          txtEl.textContent = `Delete all ${saved.length} saved dataset(s) and ${starredItems.length} starred item(s) from Quiz Database?`;
+        }
+        document.getElementById("clearDbConfirmModal").style.display = "flex";
+      }
+
+      function closeClearDbConfirmModal() {
+        document.getElementById("clearDbConfirmModal").style.display = "none";
+      }
+
+      function confirmClearAllDatabase() {
+        closeClearDbConfirmModal();
+        saveStarredItems([]);
+        setSavedQuizzes([]);
+        showToast("🧹 All database items cleared");
+      }
+
+      /* ─── STARRED ITEMS BANK ─── */
+      function isItemStarred(item) {
+        if (!item || !item.Name) return false;
+        const t = item.Name.trim().toLowerCase();
+        return starredItems.some((s) => s.Name.trim().toLowerCase() === t);
+      }
+
+      function updateStarQuestionBtnUI() {
+        const btn = document.getElementById("starQuestionBtn");
+        if (!btn || !activeQuiz[current]) return;
+        const starred = isItemStarred(activeQuiz[current].correctItemData);
+        btn.textContent = starred ? "⭐" : "☆";
+        btn.classList.toggle("starred", starred);
+      }
+
+      function toggleStarCurrentItem() {
+        if (!activeQuiz[current]) return;
+        toggleStarItemByData(activeQuiz[current].correctItemData);
+        updateStarQuestionBtnUI();
+      }
+
+      function toggleStarItemByData(item) {
+        if (!item || !item.Name) return;
+        const t = item.Name.trim().toLowerCase();
+        const idx = starredItems.findIndex(
+          (s) => s.Name.trim().toLowerCase() === t,
+        );
+        if (idx >= 0) {
+          const next = starredItems.filter((_, i) => i !== idx);
+          saveStarredItems(next);
+          showToast(`Removed "${item.Name}" from Starred Bank`);
+        } else {
+          saveStarredItems([item, ...starredItems]);
+          showToast(`⭐ Starred "${item.Name}" to Database`);
+        }
+      }
+
+      function openStarredBankModal() {
+        renderStarredBankModal();
+        document.getElementById("starredBankModal").style.display = "flex";
+      }
+
+      function closeStarredBankModal() {
+        document.getElementById("starredBankModal").style.display = "none";
+      }
+
+      function renderStarredBankModal() {
+        document.getElementById("starredBankCountText").textContent =
+          `${starredItems.length} Important Item(s)`;
+        const listEl = document.getElementById("starredBankList");
+        const actionsEl = document.getElementById("starredBankActions");
+        listEl.innerHTML = "";
+        if (starredItems.length === 0) {
+          actionsEl.style.display = "none";
+          listEl.innerHTML = `<div class="py-10 text-center text-sm text-slate-500">No starred items yet. Tap the Star button during any quiz to save important items here.</div>`;
+          return;
+        }
+        actionsEl.style.display = "flex";
+        starredItems.forEach((item, idx) => {
+          const row = document.createElement("div");
+          row.className =
+            "p-3 rounded-xl bg-slate-50 border border-amber-400/50 flex items-center gap-3";
+          row.innerHTML = `
+            <img src="${escapeHtml(item.link)}" alt="${escapeHtml(item.Name)}" class="w-14 h-14 rounded-lg object-cover border border-amber-400 shrink-0 bg-white" onerror="this.style.display='none'" />
+            <div class="flex-1 min-w-0">
+              <div class="text-sm font-bold text-slate-900 truncate">${idx + 1}. ${escapeHtml(item.Name)} ${item.Hindi ? `<span class="text-xs text-slate-500">(${escapeHtml(item.Hindi)})</span>` : ""}</div>
+              ${item.Description ? `<div class="text-xs text-slate-600 truncate">${escapeHtml(item.Description)}</div>` : ""}
+            </div>
+            <button type="button" class="text-red-600 hover:text-red-700 text-sm px-2 cursor-pointer" title="Remove">🗑</button>
+          `;
+          row.querySelector("button").onclick = () => {
+            const next = starredItems.filter((_, i) => i !== idx);
+            saveStarredItems(next);
+            renderStarredBankModal();
+          };
+          listEl.appendChild(row);
+        });
+      }
+
+      function clearAllStarredItems() {
+        if (starredItems.length === 0) return;
+        saveStarredItems([]);
+        renderStarredBankModal();
+        showToast("🧹 Cleared all starred items");
+      }
+
+      function exportStarredItemsTxt() {
+        if (starredItems.length === 0)
+          return showToast("⚠️ No starred items to export.");
+        const content = exportQuizzesToEditableText([], starredItems);
+        downloadTxtFile("starred_visual_items.txt", content);
+        showToast("✅ Exported starred_visual_items.txt");
+      }
+
+      function startStarredItemsQuiz() {
+        if (starredItems.length === 0)
+          return showToast("⚠️ No starred items yet.");
+        let pool = [...starredItems];
+        if (pool.length < 4) {
+          // Supplement distractors from rawItems or saved quizzes if fewer than 4 starred items
+          let extra = [...rawItems];
+          const saved = getSavedQuizzes();
+          saved.forEach((sq) => {
+            extra = extra.concat(
+              normalizeQuizItems(safeParsePhotoData(sq.data)),
+            );
+          });
+          extra = extra.filter(
+            (e) =>
+              !pool.some((p) => p.Name.toLowerCase() === e.Name.toLowerCase()),
+          );
+          if (pool.length + extra.length < 4) {
+            return showToast(
+              "⚠️ Star at least 4 items (or have a saved dataset for distractors) to start a quiz.",
+            );
+          }
+          rawItems = [...pool, ...extra.slice(0, 10)];
+        } else {
+          rawItems = [...pool];
+        }
+        closeStarredBankModal();
+        document.getElementById("quizDatabasePage").style.display = "none";
+        document.getElementById("homePage").style.display = "none";
+        document.getElementById("mainQuizWrapper").style.display = "flex";
+        unplayedPool = shuffleArray([...pool]);
+        selectedNumQuestions = pool.length;
+        updateNumQuestionsLabel();
+        startQuiz();
+      }
+
+      /* ═══════════════════════════════════════════════════════════
+       PREPARE QUIZ OPTIONS
+    ═══════════════════════════════════════════════════════════ */
+      function prepareVisualQuiz(itemsToPlay) {
+        return itemsToPlay.map((correctItem) => {
+          let incorrectPool = rawItems.filter(
+            (i) => i !== correctItem && i.Name !== correctItem.Name,
+          );
+          if (incorrectPool.length < 3) {
+            incorrectPool = rawItems.filter((i) => i !== correctItem);
+          }
+          incorrectPool = shuffleArray(incorrectPool);
+          let optionsSet = shuffleArray([
+            correctItem,
+            incorrectPool[0],
+            incorrectPool[1],
+            incorrectPool[2],
+          ]);
+          let correctIndex = optionsSet.indexOf(correctItem);
+
+          let questionHTML = `<span class="text-blue-600">${escapeHtml(correctItem.Name)}</span>`;
+          if (correctItem.Hindi)
+            questionHTML += `<span class="hi-text">${escapeHtml(correctItem.Hindi)}</span>`;
+
+          let speakText = correctItem.Name;
+          if (correctItem.Hindi) speakText += " . " + correctItem.Hindi;
+
+          return {
+            q: questionHTML,
+            plainText: speakText,
+            o: optionsSet.map((opt) => opt.link),
+            o_items: optionsSet,
+            a: correctIndex,
+            correctItemData: correctItem,
+          };
+        });
+      }
+
+      /* ═══════════════════════════════════════════════════════════
+       BUILD QUIZ
+    ═══════════════════════════════════════════════════════════ */
+      async function createQuizFromText() {
+        if (isOptimizing) return;
+        let txt = document.getElementById("quizInput").value.trim();
+        if (!txt) return showToast("⚠️ Please paste the JSON data first.");
+
+        if (/===\s*QUIZ\s*:/i.test(txt)) {
+          importQuizzesFromText(txt, "Imported Dataset");
+          openDatabaseScreen();
+          return;
+        }
+
+        rawItems = normalizeQuizItems(safeParsePhotoData(txt));
+
+        if (rawItems.length < 4) {
+          return showToast(
+            `⚠️ Error: Found ${rawItems.length} valid items, but at least 4 are needed.`,
+          );
+        }
+
+        isOptimizing = true;
+        const startBtn = document.querySelector(
+          "button[onclick='createQuizFromText()']",
+        );
+        const progressWrap = document.getElementById("optimizeProgress");
+        const progressFill = document.getElementById("optimizeProgressFill");
+        const progressText = document.getElementById("optimizeProgressText");
+
+        if (startBtn) {
+          startBtn.textContent = "Optimizing...";
+          startBtn.style.pointerEvents = "none";
+          startBtn.style.opacity = "0.7";
+        }
+        progressFill.style.width = "0%";
+        progressText.textContent = "Checking images...";
+        progressWrap.style.display = "block";
+        let doneCount = 0;
+
+        function updateOptimizeProgress() {
+          doneCount++;
+          const pct = Math.round((doneCount / rawItems.length) * 100);
+          progressFill.style.width = pct + "%";
+          progressText.textContent = `Checking images... ${doneCount} / ${rawItems.length}`;
+        }
+
+        try {
+          await Promise.all(
+            rawItems.map(async (item) => {
+              const isOk = await checkImage(item.link);
+              if (!isOk) {
+                try {
+                  const result = await Promise.any([
+                    fetch(
+                      `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(item.Name)}`,
+                    )
+                      .then((r) => r.json())
+                      .then((data) => {
+                        if (!data.thumbnail?.source)
+                          throw new Error("no thumb");
+                        return data.thumbnail.source;
+                      }),
+                    fetch(
+                      `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(item.Name)}&gsrnamespace=6&gsrlimit=1&prop=imageinfo&iiprop=url&format=json&origin=*`,
+                    )
+                      .then((r) => r.json())
+                      .then((data) => {
+                        const pages = data.query.pages;
+                        const pageId = Object.keys(pages)[0];
+                        const url = pages[pageId].imageinfo[0].url;
+                        const filename = url.substring(
+                          url.lastIndexOf("/") + 1,
+                        );
+                        return `https://commons.wikimedia.org/wiki/Special:FilePath/${filename}?width=600`;
+                      }),
+                  ]);
+                  item.link = result;
+                } catch (e) {}
+              }
+              updateOptimizeProgress();
+            }),
+          );
+        } finally {
+          isOptimizing = false;
+          progressWrap.style.display = "none";
+          if (startBtn) {
+            startBtn.textContent = "Start";
+            startBtn.style.pointerEvents = "auto";
+            startBtn.style.opacity = "1";
+          }
+        }
+
+        document.getElementById("quizInput").value = JSON.stringify(
+          rawItems,
+          null,
+          2,
+        );
+
+        unplayedPool = shuffleArray([...rawItems]);
+        selectedNumQuestions = rawItems.length;
+        updateNumQuestionsLabel();
+
+        document.getElementById("homePage").style.display = "none";
+        document.getElementById("quizDatabasePage").style.display = "none";
+        document.getElementById("mainQuizWrapper").style.display = "flex";
+
+        startQuiz();
+      }
+
+      /* ═══════════════════════════════════════════════════════════
+       SHUFFLE
+    ═══════════════════════════════════════════════════════════ */
+      function shuffleArray(arr) {
+        const a = [...arr];
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+      }
+
+      /* ═══════════════════════════════════════════════════════════
+       START QUIZ (SUPPORTS PRACTICE & EXAM MODES)
+    ═══════════════════════════════════════════════════════════ */
+      function startQuiz() {
+        clearTimeout(nextTimeout);
+        clearInterval(timerInterval);
+        isSearchEnabled = document.getElementById("enableSearchToggle").checked;
+        document.getElementById("searchBtn").style.display = isSearchEnabled
+          ? "inline-flex"
+          : "none";
+
+        if (searchWindowRef && !searchWindowRef.closed) {
+          searchWindowRef.close();
+          searchWindowRef = null;
+        }
+
+        let n = selectedNumQuestions;
+        if (isNaN(n) || n < 1) n = rawItems.length;
+        if (n > rawItems.length) n = rawItems.length;
+        selectedNumQuestions = n;
+        updateNumQuestionsLabel();
+
+        document.getElementById("startBtn").textContent = "Start Again (S)";
+
+        let qName = document.getElementById("quizName").value.trim();
+        const modeTag = quizMode === "EXAM" ? " • Exam Mode" : "";
+        document.getElementById("quizHeaderTitle").textContent = qName
+          ? "Raman Visual Quiz — " + qName + modeTag
+          : "Raman Visual Quiz" + modeTag;
+
+        const doShuffle = document.getElementById("shuffleToggle").checked;
+
+        let selectedForRound = [];
+        if (doShuffle) {
+          if (unplayedPool.length >= n) {
+            selectedForRound = unplayedPool.splice(0, n);
+          } else {
+            selectedForRound = [...unplayedPool];
+            let deficit = n - unplayedPool.length;
+            let fullPool = shuffleArray([...rawItems]);
+            let safeRefill = fullPool.filter(
+              (i) => !selectedForRound.some((s) => s.Name === i.Name),
+            );
+            if (safeRefill.length < deficit) safeRefill = fullPool;
+            unplayedPool = safeRefill;
+            selectedForRound = selectedForRound.concat(
+              unplayedPool.splice(0, deficit),
+            );
+          }
+        } else {
+          selectedForRound = rawItems.slice(0, n);
+          unplayedPool = [...rawItems];
+        }
+
+        activeQuiz = prepareVisualQuiz(selectedForRound);
+        wrongQuestions = [];
+        examAnswers = {};
+        examBookmarkedIndices = new Set();
+        current = 0;
+        score = 0;
+        timerPaused = false;
+        skipLock = false;
+
+        const isExam = quizMode === "EXAM";
+        document.getElementById("pauseTimerBtn").innerHTML = isExam
+          ? "⏱️"
+          : "⏸️";
+        document.getElementById("pauseTimerBtn").style.cursor = isExam
+          ? "default"
+          : "pointer";
+        document.getElementById("timerBar").style.opacity = "1";
+
+        document.getElementById("scoreBox").style.display = isExam
+          ? "none"
+          : "block";
+        document.getElementById("scoreBox").textContent = "Score: 0";
+        document.getElementById("examPaletteBtn").style.display = isExam
+          ? "inline-flex"
+          : "none";
+        document.getElementById("examBottomBar").style.display = isExam
+          ? "flex"
+          : "none";
+        document.getElementById("feedback").style.display = isExam
+          ? "none"
+          : "block";
+
+        document.getElementById("result").style.display = "none";
+        document.getElementById("quizScreen").style.display = "block";
+
+        if (isExam) {
+          examTotalTimeSeconds = Math.max(
+            questionTimeSeconds,
+            activeQuiz.length * questionTimeSeconds,
+          );
+          timeLeft = examTotalTimeSeconds;
+          startExamTimer();
+        }
+
+        loadQuestion();
+      }
+
+      /* ═══════════════════════════════════════════════════════════
+       IMAGE SEARCH
+    ═══════════════════════════════════════════════════════════ */
+      function searchImage() {
+        if (!activeQuiz[current]) return;
+        if (searchWindowRef && !searchWindowRef.closed) {
+          searchWindowRef.close();
+          searchWindowRef = null;
+          return;
+        }
+        let qName = document.getElementById("quizName").value.trim();
+        let engText = activeQuiz[current].correctItemData.Name;
+        let query = qName ? qName + " " + engText : engText;
+        let url = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(query)}`;
+        let w = 900,
+          h = 700;
+        let left = Math.round(screen.width / 2 - w / 2);
+        let top = Math.round(screen.height / 2 - h / 2);
+        searchWindowRef = window.open(
+          url,
+          "_blank",
+          `width=${w},height=${h},top=${top},left=${left},toolbar=no,menubar=no,scrollbars=yes`,
+        );
+      }
+
+      /* ═══════════════════════════════════════════════════════════
+       TIMER (PRACTICE & EXAM MODES)
+    ═══════════════════════════════════════════════════════════ */
+      function startTimer() {
+        if (quizMode === "EXAM") return;
+        clearInterval(timerInterval);
+        if (searchWindowRef && !searchWindowRef.closed) {
+          searchWindowRef.close();
+          searchWindowRef = null;
+        }
+        timeLeft = questionTimeSeconds;
+        updateTimerUI();
+        timerInterval = setInterval(() => {
+          if (timerPaused) return;
+          timeLeft--;
+          updateTimerUI();
+          if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            if (!locked) timeUp();
+          }
+        }, 1000);
+      }
+
+      function startExamTimer() {
+        clearInterval(timerInterval);
+        updateTimerUI();
+        timerInterval = setInterval(() => {
+          timeLeft--;
+          updateTimerUI();
+          if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            submitExamNow();
+          }
+        }, 1000);
+      }
+
+      function toggleTimer() {
+        if (quizMode === "EXAM") return;
+        timerPaused = !timerPaused;
+        const btn = document.getElementById("pauseTimerBtn");
+        if (timerPaused) {
+          btn.innerHTML = "▶️";
+          btn.title = "Resume Timer (P)";
+          document.getElementById("timerBar").style.opacity = "0.4";
+        } else {
+          btn.innerHTML = "⏸️";
+          btn.title = "Pause Timer (P)";
+          document.getElementById("timerBar").style.opacity = "1";
+        }
+      }
+
+      function updateTimerUI() {
+        const bar = document.getElementById("timerBar");
+        const count = document.getElementById("timerCount");
+        const maxSec =
+          quizMode === "EXAM"
+            ? Math.max(1, examTotalTimeSeconds)
+            : Math.max(1, questionTimeSeconds);
+        bar.style.width = Math.max(0, (timeLeft / maxSec) * 100) + "%";
+        count.textContent =
+          quizMode === "EXAM" ? formatExamTime(timeLeft) : timeLeft;
+        bar.className = "timer-bar";
+        count.className = "timer-count";
+        if (timeLeft <= 5) {
+          bar.classList.add("danger");
+          count.classList.add("danger");
+        } else if (timeLeft <= 10) {
+          bar.classList.add("warn");
+          count.classList.add("warn");
+        }
+      }
+
+      function timeUp() {
+        if (quizMode === "EXAM") {
+          submitExamNow();
+          return;
+        }
+        if (skipLock) return;
+        skipLock = true;
+        locked = true;
+        clearInterval(timerInterval);
+        stopTTS();
+        const correct = activeQuiz[current].a;
+        document.querySelectorAll(".option").forEach((o, i) => {
+          o.classList.add("disabled");
+          if (i === correct) o.classList.add("correct");
+        });
+        document.getElementById("feedback").innerHTML =
+          '<span style="color:#dc2626">⏰ Time\'s up / Skipped! Correct answer highlighted.</span>';
+        wrongQuestions.push({ ...activeQuiz[current], _timedOut: true });
+        playSound("wrong");
+        clearTimeout(nextTimeout);
+        nextTimeout = setTimeout(() => {
+          skipLock = false;
+          goNext();
+        }, 1500);
+      }
+
+      /* ═══════════════════════════════════════════════════════════
+       RENDER & INTERACT
+    ═══════════════════════════════════════════════════════════ */
+      function loadQuestion() {
+        clearTimeout(nextTimeout);
+        locked = false;
+        skipLock = false;
+        document.getElementById("feedback").textContent = "";
+        const q = activeQuiz[current];
+
+        const qElement = document.getElementById("question");
+        qElement.innerHTML = q.q;
+
+        if (q.correctItemData.Description) {
+          qElement.title = q.correctItemData.Description;
+          qElement.style.cursor = "help";
+          qElement.style.textDecoration = "underline dashed #94a3b8 1px";
+          qElement.style.textUnderlineOffset = "8px";
+        } else {
+          qElement.title = "";
+          qElement.style.cursor = "default";
+          qElement.style.textDecoration = "none";
+        }
+
+        updateStarQuestionBtnUI();
+
+        document.getElementById("questionNumber").textContent =
+          `Question ${current + 1} / ${activeQuiz.length}`;
+        document.getElementById("remaining").textContent =
+          `${activeQuiz.length - current} Left`;
+        document.getElementById("progressFill").style.width =
+          `${(current / activeQuiz.length) * 100}%`;
+
+        const labels = ["1", "2", "3", "4"];
+        const optContainer = document.getElementById("options");
+        optContainer.innerHTML = "";
+
+        const selectedInExam =
+          quizMode === "EXAM" ? examAnswers[current] : undefined;
+
+        q.o.forEach((imgLink, index) => {
+          const btn = document.createElement("div");
+          btn.className =
+            "option" + (selectedInExam === index ? " exam-selected" : "");
+          btn.setAttribute("role", "button");
+          btn.setAttribute("aria-label", `Option ${labels[index]}`);
+          btn.setAttribute("tabindex", "0");
+          btn.innerHTML = `
+          <div class="option-label">${labels[index]}</div>
+          <div class="option-check-badge">✔</div>
+          <div class="img-loader" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#64748b;font-size:14px;font-weight:600;z-index:1;">⏳ Loading...</div>
+          <img src="${escapeHtml(imgLink)}" alt="Option ${labels[index]}" loading="lazy"
+            style="position:relative;z-index:2;width:100%;height:100%;object-fit:contain;border-radius:12px;opacity:0;transition:opacity 0.3s;"
+            onload="if(this.previousElementSibling)this.previousElementSibling.style.display='none';this.style.opacity='1';"
+            onerror="handleImageFallback(this)" />`;
+          btn.addEventListener("mouseenter", () => {
+            if (quizMode === "EXAM" || !locked) playSound("hover");
+          });
+          btn.onclick = () => checkAnswer(btn, index);
+          btn.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              e.stopPropagation();
+              checkAnswer(btn, index);
+            }
+          });
+          optContainer.appendChild(btn);
+        });
+
+        if (quizMode === "EXAM") {
+          updateExamControlsUI();
+        } else {
+          startTimer();
+        }
+      }
+
+      function checkAnswer(btn, index) {
+        if (quizMode === "EXAM") {
+          examAnswers[current] = index;
+          playSound("hover");
+          document.querySelectorAll(".option").forEach((o, i) => {
+            o.classList.toggle("exam-selected", i === index);
+          });
+          updateExamControlsUI();
+          return;
+        }
+
+        if (locked) return;
+        locked = true;
+        clearInterval(timerInterval);
+        stopTTS();
+
+        const correct = activeQuiz[current].a;
+        document.querySelectorAll(".option").forEach((o, i) => {
+          o.classList.add("disabled");
+          if (i === correct) o.classList.add("correct");
+        });
+
+        const fb = document.getElementById("feedback");
+        if (index === correct) {
+          score++;
+          fb.innerHTML = '<span style="color:#16a34a">✅ Correct!</span>';
+          playSound("correct");
+        } else {
+          btn.classList.add("wrong");
+          wrongQuestions.push({
+            ...activeQuiz[current],
+            _timedOut: false,
+            userAnswerIndex: index,
+          });
+          fb.innerHTML = '<span style="color:#dc2626">❌ Incorrect!</span>';
+          playSound("wrong");
+        }
+
+        const sb = document.getElementById("scoreBox");
+        sb.textContent = `Score: ${score}`;
+        sb.classList.remove("pop");
+        void sb.offsetWidth;
+        sb.classList.add("pop");
+
+        clearTimeout(nextTimeout);
+        nextTimeout = setTimeout(() => goNext(), 1500);
+      }
+
+      function goNext() {
+        current++;
+        if (current >= activeQuiz.length) showResult();
+        else loadQuestion();
+      }
+
+      /* ═══════════════════════════════════════════════════════════
+       FEATURE 2: EXAM MODE CONTROLS & PALETTE
+    ═══════════════════════════════════════════════════════════ */
+      function updateExamControlsUI() {
+        const answeredCount = Object.keys(examAnswers).length;
+        const paletteText = document.getElementById("examPaletteBtnText");
+        if (paletteText) {
+          paletteText.textContent = `Palette (${answeredCount}/${activeQuiz.length})`;
+        }
+
+        const clearBtn = document.getElementById("examClearResponseBtn");
+        if (clearBtn) {
+          clearBtn.style.display =
+            examAnswers[current] !== undefined ? "inline-block" : "none";
+        }
+
+        const prevBtn = document.getElementById("examPrevBtn");
+        if (prevBtn) prevBtn.disabled = current <= 0;
+
+        const isBookmarked = examBookmarkedIndices.has(current);
+        const bmBtn = document.getElementById("examBookmarkBtn");
+        const bmText = document.getElementById("examBookmarkText");
+        if (bmBtn && bmText) {
+          bmText.textContent = isBookmarked ? "Bookmarked" : "Bookmark";
+          bmBtn.className = isBookmarked
+            ? "px-3.5 h-11 rounded-xl border-2 bg-amber-500 border-amber-600 text-white flex items-center justify-center gap-1.5 text-xs sm:text-sm font-extrabold cursor-pointer transition shrink-0 shadow-sm"
+            : "px-3.5 h-11 rounded-xl border-2 border-slate-300 bg-slate-100 text-slate-700 flex items-center justify-center gap-1.5 text-xs sm:text-sm font-extrabold cursor-pointer transition shrink-0 hover:border-amber-500";
+        }
+
+        const canNext = current < activeQuiz.length - 1;
+        const nextBtn = document.getElementById("examNextBtn");
+        const nextText = document.getElementById("examNextBtnText");
+        if (nextBtn && nextText) {
+          nextText.textContent = canNext ? "Next" : "Finish & Submit";
+          nextBtn.className = canNext
+            ? "flex-1 h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm flex items-center justify-center cursor-pointer transition"
+            : "flex-1 h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm flex items-center justify-center cursor-pointer transition";
+        }
+      }
+
+      function clearExamResponse() {
+        if (quizMode !== "EXAM") return;
+        delete examAnswers[current];
+        document.querySelectorAll(".option").forEach((o) => {
+          o.classList.remove("exam-selected");
+        });
+        updateExamControlsUI();
+      }
+
+      function goExamPrev() {
+        if (quizMode !== "EXAM" || current <= 0) return;
+        stopTTS();
+        current--;
+        loadQuestion();
+      }
+
+      function goExamNextOrSubmit() {
+        if (quizMode !== "EXAM") return;
+        stopTTS();
+        if (current < activeQuiz.length - 1) {
+          current++;
+          loadQuestion();
+        } else {
+          openExamSubmitConfirmModal();
+        }
+      }
+
+      function toggleExamBookmark() {
+        if (quizMode !== "EXAM") return;
+        if (examBookmarkedIndices.has(current)) {
+          examBookmarkedIndices.delete(current);
+        } else {
+          examBookmarkedIndices.add(current);
+        }
+        updateExamControlsUI();
+      }
+
+      function openExamPaletteModal() {
+        if (quizMode !== "EXAM") return;
+        const total = activeQuiz.length;
+        const answered = Object.keys(examAnswers).length;
+        const bookmarked = examBookmarkedIndices.size;
+        const left = Math.max(0, total - answered);
+
+        document.getElementById("paletteAnsweredCount").textContent =
+          `Answered (${answered})`;
+        document.getElementById("paletteBookmarkedCount").textContent =
+          `Bookmarked (${bookmarked})`;
+        document.getElementById("paletteLeftCount").textContent =
+          `Left (${left})`;
+
+        const grid = document.getElementById("paletteGridContainer");
+        grid.innerHTML = "";
+        for (let i = 0; i < total; i++) {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.textContent = i + 1;
+          const isCurr = i === current;
+          const isAns = examAnswers[i] !== undefined;
+          const isBm = examBookmarkedIndices.has(i);
+          let bg = "bg-white text-slate-800 hover:bg-blue-50";
+          if (isBm) bg = "bg-amber-500 hover:bg-amber-600 text-white";
+          else if (isAns) bg = "bg-green-600 hover:bg-green-700 text-white";
+
+          btn.className = `w-9 h-9 rounded-lg font-bold text-xs flex items-center justify-center cursor-pointer transition ${bg} ${
+            isCurr ? "ring-2 ring-blue-600 border-2 border-white" : "border border-slate-300"
+          }`;
+          btn.onclick = () => {
+            current = i;
+            closeExamPaletteModal();
+            loadQuestion();
+          };
+          grid.appendChild(btn);
+        }
+        document.getElementById("examPaletteModal").style.display = "flex";
+      }
+
+      function closeExamPaletteModal() {
+        document.getElementById("examPaletteModal").style.display = "none";
+      }
+
+      function openExamSubmitConfirmModal() {
+        const total = activeQuiz.length;
+        const answered = Object.keys(examAnswers).length;
+        const skipped = Math.max(0, total - answered);
+        const bookmarked = examBookmarkedIndices.size;
+
+        document.getElementById("submitStatTotal").textContent = total;
+        document.getElementById("submitStatDone").textContent = answered;
+        document.getElementById("submitStatSkipped").textContent = skipped;
+        document.getElementById("submitStatBookmarked").textContent =
+          bookmarked;
+        document.getElementById("examSubmitConfirmModal").style.display =
+          "flex";
+      }
+
+      function closeExamSubmitConfirmModal() {
+        document.getElementById("examSubmitConfirmModal").style.display =
+          "none";
+      }
+
+      function submitExamNow() {
+        closeExamSubmitConfirmModal();
+        closeExamPaletteModal();
+        clearInterval(timerInterval);
+        stopTTS();
+
+        score = 0;
+        wrongQuestions = [];
+        activeQuiz.forEach((q, idx) => {
+          const ans = examAnswers[idx];
+          if (ans === undefined || ans === null) {
+            wrongQuestions.push({
+              ...q,
+              _timedOut: true,
+              userAnswerIndex: null,
+            });
+          } else if (ans === q.a) {
+            score++;
+          } else {
+            wrongQuestions.push({
+              ...q,
+              _timedOut: false,
+              userAnswerIndex: ans,
+            });
+          }
+        });
+
+        playSound("correct");
+        showResult();
+      }
+
+      /* ═══════════════════════════════════════════════════════════
+       RESULTS
+    ═══════════════════════════════════════════════════════════ */
+      function showResult() {
+        clearTimeout(nextTimeout);
+        clearInterval(timerInterval);
+        document.getElementById("quizScreen").style.display = "none";
+        document.getElementById("examPaletteBtn").style.display = "none";
+        document.getElementById("scoreBox").style.display = "block";
+        document.getElementById("scoreBox").textContent = `Score: ${score}`;
+        document.getElementById("result").style.display = "block";
+
+        const total = activeQuiz.length;
+        const accuracy = total > 0 ? Math.round((score / total) * 100) : 0;
+        const ring = document.getElementById("scoreRing");
+        const colors =
+          accuracy >= 80
+            ? ["#16a34a", "#15803d"]
+            : accuracy >= 60
+              ? ["#2563eb", "#1d4ed8"]
+              : accuracy >= 40
+                ? ["#f59e0b", "#d97706"]
+                : ["#dc2626", "#b91c1c"];
+        ring.style.background = `linear-gradient(135deg, ${colors[0]}, ${colors[1]})`;
+
+        document.getElementById("finalScore").textContent = score;
+        document.getElementById("finalFraction").textContent = `/ ${total}`;
+
+        const { grade, msg } = getGrade(accuracy);
+        const gb = document.getElementById("gradeBadge");
+        gb.textContent = grade;
+        gb.style.background = colors[0];
+        gb.style.color = "white";
+        document.getElementById("gradeMsg").textContent = msg;
+
+        document.getElementById("statAccuracy").textContent = accuracy + "%";
+        document.getElementById("statCorrect").textContent = score;
+        document.getElementById("statWrong").textContent =
+          wrongQuestions.filter((q) => !q._timedOut).length;
+        document.getElementById("statSkipped").textContent =
+          wrongQuestions.filter((q) => q._timedOut).length;
+
+        sessionHistory.push({
+          score,
+          total,
+          accuracy,
+          time: new Date().toLocaleTimeString("en-IN"),
+        });
+        if (sessionHistory.length > 10) sessionHistory.shift();
+        sessionStorage.setItem(
+          "quizSessionHistory",
+          JSON.stringify(sessionHistory),
+        );
+
+        const histEl = document.getElementById("sessionHistory");
+        if (sessionHistory.length > 1) {
+          const totalSessions = sessionHistory.length;
+          const avgAccuracy = Math.round(
+            sessionHistory.reduce((s, r) => s + r.accuracy, 0) / totalSessions,
+          );
+          const bestAccuracy = Math.max(
+            ...sessionHistory.map((r) => r.accuracy),
+          );
+          histEl.innerHTML = `<strong>Today's Session:</strong> ${totalSessions} round(s) played &nbsp;|&nbsp; Avg Accuracy: <strong>${avgAccuracy}%</strong> &nbsp;|&nbsp; Best: <strong>${bestAccuracy}%</strong>`;
+          histEl.style.display = "block";
+        } else {
+          histEl.style.display = "none";
+        }
+
+        const toggleBtn = document.getElementById("toggleReviewBtn");
+        const retryBtn = document.getElementById("retryBtn");
+        const reviewDiv = document.getElementById("reviewAnswers");
+
+        if (wrongQuestions.length > 0) {
+          toggleBtn.style.display = "inline-block";
+          toggleBtn.textContent = "View Wrong Answers (W)";
+          retryBtn.style.display = "inline-block";
+          let html =
+            '<h3 style="font-weight:700;margin-bottom:12px;">Wrong Answers Review:</h3>';
+          wrongQuestions.forEach((q) => {
+            let reviewNameHTML = escapeHtml(q.correctItemData.Name);
+            if (q.correctItemData.Hindi) {
+              reviewNameHTML += ` <span style="color:#64748b;font-size:14px;margin-left:6px;">(${escapeHtml(q.correctItemData.Hindi)})</span>`;
+            }
+            if (q.correctItemData.Description) {
+              reviewNameHTML += `<p style="font-size:13px; font-weight:400; color:#475569; margin-top:4px;">${escapeHtml(q.correctItemData.Description)}</p>`;
+            }
+            let userChoiceText = "";
+            if (
+              q.userAnswerIndex !== undefined &&
+              q.userAnswerIndex !== null &&
+              q.o_items &&
+              q.o_items[q.userAnswerIndex]
+            ) {
+              userChoiceText = `<div style="font-size:12px;color:#dc2626;font-weight:600;margin-bottom:2px;">✖ Your Choice: ${escapeHtml(q.o_items[q.userAnswerIndex].Name)}</div>`;
+            } else if (q._timedOut) {
+              userChoiceText = `<div style="font-size:12px;color:#d97706;font-weight:600;margin-bottom:2px;">⏰ Status: Skipped / Timed Out</div>`;
+            }
+            html += `
+            <div class="review-item">
+              <div style="position:relative;width:100px;height:100px;flex-shrink:0;border-radius:8px;overflow:hidden;background:#fff;">
+                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:12px;font-weight:600;color:#64748b;text-align:center;z-index:1;">⏳ Loading...</div>
+                <img src="${escapeHtml(q.correctItemData.link)}" alt="Correct Option" loading="lazy"
+                  style="position:relative;z-index:2;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 0.3s;"
+                  onload="if(this.previousElementSibling)this.previousElementSibling.style.display='none';this.style.opacity='1';"
+                  onerror="handleImageFallback(this)" />
+              </div>
+              <div class="flex-1">
+                <div style="font-weight:700;color:var(--text);margin-bottom:4px;">${reviewNameHTML}</div>
+                ${userChoiceText}
+                <div style="font-size:13px;color:#16a34a;font-weight:600;">✅ This was the correct image</div>
+              </div>
+            </div>`;
+          });
+          reviewDiv.innerHTML = html;
+          reviewDiv.style.display = "none";
+        } else {
+          toggleBtn.style.display = "none";
+          retryBtn.style.display = "none";
+          reviewDiv.innerHTML = "";
+        }
+      }
+
+      function getGrade(acc) {
+        if (acc >= 90)
+          return { grade: "A+", msg: "Excellent! Outstanding performance 🎉" };
+        if (acc >= 80)
+          return { grade: "A", msg: "Great job! Very well done 👏" };
+        if (acc >= 70)
+          return { grade: "B", msg: "Good effort! You can still improve 👍" };
+        if (acc >= 60) return { grade: "C", msg: "Not bad, keep learning 📚" };
+        if (acc >= 40) return { grade: "D", msg: "Needs more practice 🔁" };
+        return { grade: "F", msg: "Don't give up! Try again 💪" };
+      }
+
+      function toggleReview() {
+        const rd = document.getElementById("reviewAnswers");
+        const btn = document.getElementById("toggleReviewBtn");
+        if (rd.style.display === "none") {
+          rd.style.display = "block";
+          btn.textContent = "Hide Wrong Answers (W)";
+        } else {
+          rd.style.display = "none";
+          btn.textContent = "View Wrong Answers (W)";
+        }
+      }
+
+      function retryWrongAnswers() {
+        if (wrongQuestions.length === 0) return;
+
+        const itemsToRetry = wrongQuestions.map((q) => q.correctItemData);
+
+        if (rawItems.length < 4) {
+          showToast("⚠️ Retry ke liye kam se kam 4 items hone chahiye dataset mein.");
+          return;
+        }
+
+        clearTimeout(nextTimeout);
+        clearInterval(timerInterval);
+        timerPaused = false;
+        skipLock = false;
+
+        let tempRaw = rawItems;
+        if (itemsToRetry.length < 4) {
+          const extras = rawItems.filter(
+            (r) => !itemsToRetry.some((i) => i.Name === r.Name),
+          );
+          tempRaw = [
+            ...itemsToRetry,
+            ...shuffleArray(extras).slice(0, 4 - itemsToRetry.length),
+          ];
+        }
+
+        const originalRaw = rawItems;
+        rawItems = tempRaw;
+        activeQuiz = prepareVisualQuiz(shuffleArray(itemsToRetry));
+        rawItems = originalRaw;
+
+        selectedNumQuestions = activeQuiz.length;
+        updateNumQuestionsLabel();
+        document.getElementById("startBtn").textContent = "Start Again (S)";
+
+        wrongQuestions = [];
+        examAnswers = {};
+        examBookmarkedIndices = new Set();
+        current = 0;
+        score = 0;
+
+        const isExam = quizMode === "EXAM";
+        document.getElementById("scoreBox").style.display = isExam
+          ? "none"
+          : "block";
+        document.getElementById("scoreBox").textContent = "Score: 0";
+        document.getElementById("examPaletteBtn").style.display = isExam
+          ? "inline-flex"
+          : "none";
+        document.getElementById("examBottomBar").style.display = isExam
+          ? "flex"
+          : "none";
+        document.getElementById("result").style.display = "none";
+        document.getElementById("quizScreen").style.display = "block";
+
+        if (isExam) {
+          examTotalTimeSeconds = Math.max(
+            questionTimeSeconds,
+            activeQuiz.length * questionTimeSeconds,
+          );
+          timeLeft = examTotalTimeSeconds;
+          startExamTimer();
+        }
+
+        loadQuestion();
+      }
+
+      function goHome() {
+        closeExamSubmitConfirmModal();
+        closeExamPaletteModal();
+        closeQuestionQtyModal();
+        clearTimeout(nextTimeout);
+        clearInterval(timerInterval);
+        stopTTS();
+        locked = false;
+        skipLock = false;
+        timerPaused = false;
+        if (searchWindowRef && !searchWindowRef.closed) {
+          searchWindowRef.close();
+          searchWindowRef = null;
+        }
+        document.getElementById("startBtn").textContent = "Start Again (S)";
+        document.getElementById("mainQuizWrapper").style.display = "none";
+        document.getElementById("quizDatabasePage").style.display = "none";
+        document.getElementById("homePage").style.display = "flex";
+      }
+
+      /* ═══════════════════════════════════════════════════════════
+       FULLSCREEN
+    ═══════════════════════════════════════════════════════════ */
+      function updateFullscreenBtn() {
+        const btn = document.getElementById("fullscreenBtn");
+        if (!btn) return;
+        if (document.fullscreenElement) {
+          btn.innerHTML = "✖";
+          btn.title = "Exit Fullscreen (F)";
+        } else {
+          btn.innerHTML = "⛶";
+          btn.title = "Toggle Fullscreen (F)";
+        }
+      }
+
+      document.addEventListener("fullscreenchange", updateFullscreenBtn);
+
+      function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+          document.documentElement
+            .requestFullscreen()
+            .catch((err) => console.log(err.message));
+        } else if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+
+      /* ═══════════════════════════════════════════════════════════
+       FREE GOOGLE TTS (NO API KEY REQUIRED)
+    ═══════════════════════════════════════════════════════════ */
+      let currentFreeAudio = null;
+
+      function stopTTS() {
+        if (currentFreeAudio) {
+          currentFreeAudio.pause();
+          currentFreeAudio.currentTime = 0;
+        }
+      }
+
+      function playFreeGoogleTTS(text, lang = "hi") {
+        stopTTS();
+        const url = `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=${lang}&q=${encodeURIComponent(text)}`;
+        currentFreeAudio = new Audio(url);
+        currentFreeAudio.playbackRate = 0.9;
+        currentFreeAudio
+          .play()
+          .catch((e) =>
+            console.warn(
+              "Audio play blocked by browser. Please interact with the page first.",
+              e,
+            ),
+          );
+      }
+
+      function speakQuestion() {
+        if (!activeQuiz[current]) return;
+        playFreeGoogleTTS(activeQuiz[current].plainText, "hi");
+      }
+
+      function speakDescription() {
+        if (
+          !activeQuiz[current] ||
+          !activeQuiz[current].correctItemData.Description
+        )
+          return;
+        playFreeGoogleTTS(
+          activeQuiz[current].correctItemData.Description,
+          "hi",
+        );
+      }
+
+      document.getElementById("speakBtn").onclick = speakQuestion;
+
+      /* ═══════════════════════════════════════════════════════════
+       AUDIO
+    ═══════════════════════════════════════════════════════════ */
+      function playSound(type) {
+        try {
+          const ctx = getAC();
+          if (ctx.state === "suspended") {
+            ctx.resume().catch(() => {});
+          }
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          if (type === "correct") {
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(600, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(
+              1200,
+              ctx.currentTime + 0.1,
+            );
+            gain.gain.setValueAtTime(0.4, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.2);
+          } else if (type === "wrong") {
+            osc.type = "sawtooth";
+            osc.frequency.setValueAtTime(300, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(
+              100,
+              ctx.currentTime + 0.2,
+            );
+            gain.gain.setValueAtTime(0.4, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.3);
+          } else if (type === "hover") {
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(800, ctx.currentTime);
+            gain.gain.setValueAtTime(0.025, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(
+              0.001,
+              ctx.currentTime + 0.05,
+            );
+            osc.start();
+            osc.stop(ctx.currentTime + 0.05);
+          }
+        } catch (e) {}
+      }
+
+      /* ═══════════════════════════════════════════════════════════
+       KEYBOARD & MOUSE SHORTCUTS
+    ═══════════════════════════════════════════════════════════ */
+      function isAnyModalOpen() {
+        const ids = [
+          "copyPromptModal",
+          "questionTimingModal",
+          "questionQtyModal",
+          "examPaletteModal",
+          "examSubmitConfirmModal",
+          "starredBankModal",
+          "clearDbConfirmModal",
+        ];
+        return ids.some(
+          (id) => document.getElementById(id)?.style.display === "flex",
+        );
+      }
+
+      function closeTopModal() {
+        const ids = [
+          "examSubmitConfirmModal",
+          "examPaletteModal",
+          "questionQtyModal",
+          "questionTimingModal",
+          "copyPromptModal",
+          "starredBankModal",
+          "clearDbConfirmModal",
+        ];
+        for (const id of ids) {
+          const el = document.getElementById(id);
+          if (el && el.style.display === "flex") {
+            el.style.display = "none";
+            return true;
+          }
+        }
+        return false;
+      }
+
+      document.addEventListener("keydown", (e) => {
+        if (e.ctrlKey || e.altKey || e.metaKey) return;
+
+        const key = e.key.toLowerCase();
+
+        if (isAnyModalOpen()) {
+          if (key === "escape") {
+            e.preventDefault();
+            closeTopModal();
+          }
+          return;
+        }
+
+        const quizWrapperVisible =
+          document.getElementById("mainQuizWrapper").style.display !== "none";
+        const quizScreenVisible =
+          quizWrapperVisible &&
+          document.getElementById("quizScreen").style.display !== "none";
+        const resultScreenVisible =
+          quizWrapperVisible &&
+          document.getElementById("result").style.display === "block";
+        const homePageVisible =
+          document.getElementById("homePage").style.display !== "none";
+        const dbPageVisible =
+          document.getElementById("quizDatabasePage").style.display !== "none";
+
+        if (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT")
+          return;
+
+        if (key === "q" && quizWrapperVisible) {
+          e.preventDefault();
+          openQuestionQtyModal();
+          return;
+        }
+
+        if (e.code === "Space") {
+          e.preventDefault();
+          if (quizScreenVisible) speakQuestion();
+          return;
+        }
+
+        if (key === "n" && quizScreenVisible && !locked) {
+          if (quizMode === "EXAM") {
+            goExamNextOrSubmit();
+          } else {
+            timeUp();
+          }
+          return;
+        }
+
+        if (key === "p" && quizScreenVisible && quizMode === "PRACTICE") {
+          toggleTimer();
+          return;
+        }
+
+        if (key === "g" && quizScreenVisible && !locked && isSearchEnabled) {
+          searchImage();
+          return;
+        }
+
+        if (key === "d" && quizScreenVisible) {
+          speakDescription();
+          return;
+        }
+
+        if (key === "l") {
+          toggleDarkMode();
+          return;
+        }
+
+        if (key === "escape") {
+          if (dbPageVisible) {
+            closeDatabaseScreen();
+          } else if (quizScreenVisible || resultScreenVisible) {
+            goHome();
+          }
+          return;
+        }
+
+        if (key === "c" && homePageVisible) {
+          e.preventDefault();
+          openCopyPromptModal();
+          return;
+        }
+
+        if (e.key === "Enter" && homePageVisible) {
+          createQuizFromText();
+          return;
+        }
+
+        if (key === "h" && resultScreenVisible) {
+          goHome();
+          return;
+        }
+
+        if (key === "t" && resultScreenVisible) {
+          startQuiz();
+          return;
+        }
+
+        if (key === "f") {
+          toggleFullscreen();
+          return;
+        }
+
+        if (
+          !locked &&
+          ["1", "2", "3", "4"].includes(e.key) &&
+          quizScreenVisible
+        ) {
+          const opts = document.querySelectorAll(".option");
+          const idx = parseInt(e.key, 10) - 1;
+          if (opts[idx]) opts[idx].click();
+          return;
+        }
+
+        if (key === "s" && quizWrapperVisible) {
+          document.getElementById("startBtn")?.click();
+          return;
+        }
+
+        if (key === "w" && resultScreenVisible) {
+          const t = document.getElementById("toggleReviewBtn");
+          if (t && t.style.display !== "none") t.click();
+          return;
+        }
+
+        if (key === "r" && resultScreenVisible) {
+          const btn = document.getElementById("retryBtn");
+          if (btn && btn.style.display !== "none") btn.click();
+          return;
+        }
+
+        if (key === "m") {
+          stopTTS();
+          return;
+        }
+      });
+
+      /* ═══════════════════════════════════════════════════════════
+       DRAG & DROP FILE UPLOAD
+    ═══════════════════════════════════════════════════════════ */
+      const quizInputArea = document.getElementById("quizInput");
+
+      quizInputArea.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        quizInputArea.classList.add("drag-over");
+      });
+      quizInputArea.addEventListener("dragleave", (e) => {
+        e.preventDefault();
+        quizInputArea.classList.remove("drag-over");
+      });
+      quizInputArea.addEventListener("drop", (e) => {
+        e.preventDefault();
+        quizInputArea.classList.remove("drag-over");
+        if (e.dataTransfer.files.length > 0) {
+          const file = e.dataTransfer.files[0];
+          if (
+            file.name.endsWith(".json") ||
+            file.name.endsWith(".txt") ||
+            file.type.match("text.*")
+          ) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+              const content = String(event.target.result || "");
+              const baseName = file.name.replace(/\.[^/.]+$/, "");
+              if (/===\s*QUIZ\s*:/i.test(content)) {
+                importQuizzesFromText(content, baseName);
+                openDatabaseScreen();
+              } else {
+                quizInputArea.value = content;
+                document.getElementById("quizName").value = baseName;
+              }
+            };
+            reader.readAsText(file);
+          } else {
+            showToast("⚠️ Error: Please drop only .txt or .json files.");
+          }
+        }
+      });
+
+      /* ═══════════════════════════════════════════════════════════
+       SWIPE GESTURES
+    ═══════════════════════════════════════════════════════════ */
+      let touchStartX = 0,
+        touchStartY = 0;
+      document.addEventListener(
+        "touchstart",
+        (e) => {
+          touchStartX = e.changedTouches[0].screenX;
+          touchStartY = e.changedTouches[0].screenY;
+        },
+        { passive: true },
+      );
+      document.addEventListener(
+        "touchend",
+        (e) => {
+          const dx = e.changedTouches[0].screenX - touchStartX;
+          const dy = e.changedTouches[0].screenY - touchStartY;
+          const quizWrapperVisible =
+            document.getElementById("mainQuizWrapper").style.display !== "none";
+          const quizScreenVisible =
+            quizWrapperVisible &&
+            document.getElementById("quizScreen").style.display !== "none";
+          if (!quizScreenVisible) return;
+          if (Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx)) return;
+          if (dx < 0 && !locked) {
+            if (quizMode === "EXAM") goExamNextOrSubmit();
+            else timeUp();
+          }
+          if (dx > 0) {
+            if (quizMode === "EXAM") goExamPrev();
+            else speakQuestion();
+          }
+        },
+        { passive: true },
+      );
+
+      /* ═══════════════════════════════════════════════════════════
+       OFFLINE EXPORT
+    ═══════════════════════════════════════════════════════════ */
+      function exportSavedQuiz(idx, e) {
+        if (e) e.stopPropagation();
+        const saved = getSavedQuizzes();
+        const item = saved[idx];
+        if (!item) return;
+
+        const safeJsonData = JSON.stringify(item.data)
+          .replace(/</g, "\\u003c")
+          .replace(/>/g, "\\u003e");
+        const safeNameLiteral = JSON.stringify(item.name);
+        const safeTitle = escapeHtml(item.name);
+
+        const offlineHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${safeTitle} — Visual Quiz</title>
+  <script>
+    window.addEventListener('DOMContentLoaded', function() {
+      var el = document.getElementById('quizInput');
+      if (el) el.value = ${safeJsonData};
+      var nm = document.getElementById('quizName');
+      if (nm) nm.value = ${safeNameLiteral};
+    });
+  <\/script>
+</head>
+<body>
+  <p style="font-family:sans-serif;padding:2rem;text-align:center;color:#555;">
+    ⚠️ This offline export requires an internet connection for images.<br><br>
+    <strong>Quiz:</strong> ${safeTitle}<br><br>
+    For the best experience, open the original quiz page and load this dataset.<br><br>
+    <em>Exported on ${new Date().toLocaleString("en-IN")}</em>
+  </p>
+  <pre style="font-family:monospace;font-size:13px;padding:2rem;white-space:pre-wrap;word-break:break-all;">${escapeHtml(item.data)}</pre>
+</body>
+</html>`;
+
+        const safeName = item.name.replace(/[^a-z0-9]/gi, "_").toLowerCase();
+        const blob = new Blob([offlineHTML], { type: "text/html" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = safeName + "_data.html";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast(`✅ Exported Offline HTML: ${item.name}`);
+      }
+
+      /* ═══════════════════════════════════════════════════════════
+       INIT
+    ═══════════════════════════════════════════════════════════ */
+      setQuizMode(quizMode);
+      updateTimingLabels();
+      updateDatabaseBtnCount();
+    </script>
+  </body>
+</html>
